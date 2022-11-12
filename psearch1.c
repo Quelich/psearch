@@ -1,7 +1,6 @@
 /* FIX THIS
 
-- cannot read input1.txt
-- input13.txt keyword is in the 2th line but it prints as 3rd
+- input1-3.txt keyword is in the 2th line but it prints as 3rd
 
 */
 
@@ -11,12 +10,12 @@
 #include <unistd.h>
 
 //#define BUFFER_SIZE 209715200 // 200 MB
-#define ROOT_DIR "./"
-#define BUFFER_DIR "buffer_"
-#define OUTPUT_BUFFER_SIZE 10240
-#define WORD_BUFFER 1024
-#define LINE_BUFFER 1024
-#define MAX_MATCHED_LINES 1024
+#define ROOT_DIR            "./"
+#define BUFFER_DIR          "buffer_"
+#define OUTPUT_BUFFER_SIZE  10240
+#define WORD_BUFFER         1024
+#define LINE_BUFFER         1024
+#define MAX_MATCHED_LINES   1024
 
 int main(int argc, int **argv)
 {
@@ -215,7 +214,7 @@ int main(int argc, int **argv)
             int outputChar;
             while (((outputChar = fgetc(bufferFileStream)) != EOF))
             {
-                outputBuffer[outputCharCount++]S = (char)outputChar;
+                outputBuffer[outputCharCount++] = (char)outputChar;
             }
         }
 
@@ -242,6 +241,13 @@ int main(int argc, int **argv)
     fclose(outputFileStream);
 
     /* REMOVE BUFFER OUTPUTS */
+    for (int i = 0; i < filesCount; i++)
+    {
+        if(remove(bufferOutputDirs[i]) != 0)
+        {
+            printf("Unable to remove %s\n", bufferOutputDirs[i]);
+        }
+    }
     
 
     return 0;

@@ -1,7 +1,0 @@
-./input2.txt, 1: name asda
-
-./input2.txt, 4: asodfğpsğ asp ğadsaojsapd name asdjoasj
-
-./input2.txt, 6: name asodkas named asojdpao sjoaağ oaksd
-
-./input2.txt, 7: alskn name asokd aosk asd
