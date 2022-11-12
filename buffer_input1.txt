@@ -1,0 +1,3 @@
+./input1.txt, 2: name aosjdpoa jos paosd aosjdpoa
+
+./input1.txt, 4: namename apsod name
