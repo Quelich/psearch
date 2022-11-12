@@ -1,6 +1,6 @@
 /* FIX THIS
 
-- when the keyword at the start it cannot be found
+- input13.txt keyword is in the 2th line but it prints as 3rd 
 
 */
 
@@ -25,13 +25,12 @@ int main(int argc, int **argv)
         return 0;
     }
 
-   
     char *searchKeyword = argv[1]; /* DO NOT CHANGE: reserved for the keyword*/
-    int *filesCount = argv[2]; /* DO NOT CHANGE: reserved for the files count*/
+    int *filesCount = argv[2];     /* DO NOT CHANGE: reserved for the files count*/
 
     for (int a = 3; a < argc - 1; a++)
     {
-       
+
         FILE *fileStream; /* single stream for a file */
         char *fileDir = argv[a];
 
@@ -53,7 +52,6 @@ int main(int argc, int **argv)
             return 0;
         }
 
-        
         // Create matched lines indices array
         int matchedLinesIndices[MAX_MATCHED_LINES];
         for (int b = 0; b < MAX_MATCHED_LINES; b++)
@@ -63,7 +61,7 @@ int main(int argc, int **argv)
 
         int matchedLinesCount = 0;
         int myChar;
-        int lineCount = 1;
+        int lineCount = 0;
         char strBuffer[WORD_BUFFER];
 
         // Read file by word and character
@@ -87,34 +85,30 @@ int main(int argc, int **argv)
         int wordChCount = 0;
         while (((myChar = fgetc(fileStream)) != EOF))
         {
-            
-            if ((char)myChar == '\n')
+            if (myChar == '\n')
             {
                 lineCount++;
             }
-
-            
             // Before beginning a new word
-            if (myChar == ' ' || myChar == '\n' || myChar == '\0' || myChar == '\t'  )
-            {   
-               if (strcmp(word, searchKeyword) == 0)
-               {
-                    matchedLinesIndices[matchedLinesCount] = lineCount;
+            if (myChar == ' ' || myChar == '\n' || myChar == '\0' || myChar == '\t')
+            {
+
+                if (strcmp(word, searchKeyword) == 0)
+                {
+                    matchedLinesIndices[matchedLinesCount] = lineCount + 1;
                     matchedLinesCount++;
-               }
-                
-               // Reset word 
-               word[0] = 0;
-               wordChCount = 0;
+                }
+
+                // Reset word
+                word[0] = '\0';
+                wordChCount = 0;
             }
             else
             {
                 word[wordChCount++] = (char)myChar;
-                word[wordChCount] = 0;
-
+                word[wordChCount] = '\0';
             }
         }
-        
 
         char matchedLines[MAX_MATCHED_LINES][WORD_BUFFER];
         char line[LINE_BUFFER];
@@ -123,7 +117,7 @@ int main(int argc, int **argv)
         // Print matched line indices
         for (int i = 0; i < MAX_MATCHED_LINES; i++)
         {
-            if(i % 30 == 0)
+            if (i % 30 == 0)
             {
                 printf("\n");
             }
@@ -131,7 +125,7 @@ int main(int argc, int **argv)
         }
 
         printf("\n");
-        
+
         // Write all lines to an array
         rewind(fileStream);
         int j = 1;

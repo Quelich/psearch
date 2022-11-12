@@ -1,6 +1,13 @@
+/* FIX THIS
+
+- input13.txt keyword is in the 2th line but it prints as 3rd 
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define ROOT_DIR "./"
 #define BUFFER_SIZE 209715200 // 200 MB
@@ -19,126 +26,134 @@ int main(int argc, int **argv)
         return 0;
     }
 
-    char *searchKeyword = argv[1];
-    int keywordLen = strlen(searchKeyword);
+    char *searchKeyword = argv[1]; /* DO NOT CHANGE: reserved for the keyword*/
+    int *filesCount = argv[2];     /* DO NOT CHANGE: reserved for the files count*/
+    char *outputFileName = malloc(1024);
 
-    /*
-    argv[0]: spared for command
-    argv[1]: spared for keyword
-    ...
-    argv[n]: spared for output file
-    */
+    // create output file directory
+    strcat(outputFileName, ROOT_DIR);
+    strcat(outputFileName, argv[argc - 1]);
+    //printf("output file: %s\n", argv[argc - 1]);
 
-    char *fileBuffer = malloc(BUFFER_SIZE * sizeof(char));          /* the file content*/
-    char *currentFile = malloc(sizeof(argv[1]) + sizeof(ROOT_DIR)); /* memory alloc for a file*/
-
-    for (int i = 2; i < argc - 1; i++)
+    for (int a = 3; a < argc - 1; a++)
     {
-        FILE *fileStream; /* single stream for a file */
 
-        char *fileDir = argv[i];
+        FILE *inputFileStream; /* single stream for a file */
+        char *fileDir = argv[a];
 
+        char currentFile[WORD_BUFFER];
         if (currentFile == NULL)
         {
             printf("No memory\n");
             return 0;
         }
 
-        // Make a complete dir for the argv[ie]
+        // Make a complete dir for the argv[i]
         strcat(currentFile, ROOT_DIR);
         strcat(currentFile, fileDir);
-        // Open file content
 
-        if ((fileStream = fopen(currentFile, "r")) == NULL)
+        // Open file content
+        if ((inputFileStream = fopen(currentFile, "r")) == NULL)
         {
             printf("Error opening file!\n");
             return 0;
         }
 
-        int bufferCount = 0;
-        char strBuffer[WORD_BUFFER];
-
         // Create matched lines indices array
         int matchedLinesIndices[MAX_MATCHED_LINES];
-        for (int i = 0; i < MAX_MATCHED_LINES; i++)
+        for (int b = 0; b < MAX_MATCHED_LINES; b++)
         {
-            matchedLinesIndices[i] = 0;
+            matchedLinesIndices[b] = 0;
         }
-        
-        int matchedLinesCounter = 0;
+
+        int matchedLinesCount = 0;
         int myChar;
-        int lineCounter = 1;
-       
+        int lineCount = 0;
+        char word[WORD_BUFFER];
+        int wordChCount = 0;
 
-        // Read file by word
-        while ( ((myChar = fgetc(fileStream)) != EOF) &&
-                fscanf(fileStream, "%1023s", strBuffer) == 1)
-        {   
 
-            if((char)myChar == '\n')
+        while (((myChar = fgetc(inputFileStream)) != EOF))
+        {
+            if (myChar == '\n')
             {
-                lineCounter++;
+                lineCount++;
             }
-
-            if(strcmp(strBuffer, searchKeyword) == 0)
+            // Before beginning a new word
+            if (myChar == ' ' || myChar == '\n' || myChar == '\0' || myChar == '\t')
             {
-                matchedLinesIndices[matchedLinesCounter] = lineCounter;
-                matchedLinesCounter++;
-            }
 
-            fileBuffer[bufferCount++] = (char)myChar;
+                if (strcmp(word, searchKeyword) == 0)
+                {
+                    matchedLinesIndices[matchedLinesCount] = lineCount + 1;
+                    matchedLinesCount++;
+                }
+
+                // Reset word
+                word[0] = '\0';
+                wordChCount = 0;
+            }
+            else
+            {
+                word[wordChCount++] = (char)myChar;
+                word[wordChCount] = '\0';
+            }
         }
 
-        
         char matchedLines[MAX_MATCHED_LINES][WORD_BUFFER];
-
-        matchedLinesCounter = 0;
         char line[LINE_BUFFER];
 
+        /* DEBUGGING */
         // Print matched line indices
         // for (int i = 0; i < MAX_MATCHED_LINES; i++)
         // {
-        //     if(i % 30 == 0)
+        //     if (i % 30 == 0)
         //     {
         //         printf("\n");
         //     }
         //     printf("%d ", matchedLinesIndices[i]);
         // }
 
+        //printf("\n");
+
         // Write all lines to an array
-        rewind(fileStream);
+        rewind(inputFileStream);
         int j = 1;
-        while ((fgets(line, LINE_BUFFER, fileStream)) != NULL)
-        {   
-            
-            strcpy(matchedLines[j],line); 
+        while ((fgets(line, LINE_BUFFER, inputFileStream)) != NULL)
+        {
+            strcpy(matchedLines[j], line);
             j++;
         }
 
-    
-        // Read matched lines from the array
-        printf("\nMatched lines:\n");
-        int l = 0;
-        for (int k = 0; k < MAX_MATCHED_LINES; k++)
+        // End of reading file 
+        //printf("\n");
+        rewind(inputFileStream);
+        fclose(inputFileStream);
+        
+
+
+        // Write to output file
+        FILE * outputFileStream;
+
+        if ((outputFileStream = fopen(outputFileName, "a")) == NULL)
         {
-           if (k == matchedLinesIndices[l])
-           {
-                printf("%s, %d: %s\n", currentFile, k, matchedLines[k]);
-                l++;
-           }
-           
+            printf("Error opening output file!\n");
+            return 0;
         }
 
-        fclose(fileStream);
+        int l = 0;
+        for (int k = 0; k < MAX_MATCHED_LINES; k++)
+        {   
+            
 
-        // printf("The %s content:\n%s", currentFile, fileBuffer);
-        printf("\n");
-        // printf("Current File: %s\n", currentFile);
-        // printf("Content: \n%s\n", fileBuffer);
-        // printf("Number of lines: %d\n", lineCounter);
-        // printf("Detected n: %d\n", i);
-        printf("***********************************************\n");
-
+            // TODO: write to a file
+            if (k == matchedLinesIndices[l])
+            {
+                fprintf(outputFileStream, "%s, %d: %s\n", currentFile, k, matchedLines[k]);
+                l++;
+            }
+        }
+        fclose(outputFileStream);
         *currentFile = '\0';
     }
 
