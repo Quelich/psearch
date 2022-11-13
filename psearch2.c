@@ -12,6 +12,7 @@
 //#define BUFFER_SIZE 209715200 // 200 MB
 #define ROOT_DIR            "./"
 #define BUFFER_DIR          "buffer_"
+#define PIPE_BUFFER         2063
 #define OUTPUT_BUFFER_SIZE  10240
 #define WORD_BUFFER         1024
 #define LINE_BUFFER         1024
@@ -41,24 +42,20 @@ int main(int argc, int **argv)
         e++;
     }
 
-    /* DEBUGGING: Print input file names*/
-    // for (int i = 0; i < 1024; i++)
-    // {
-    //     if (i == 30)
-    //     {
-    //         printf("\n");
-    //     }
-
-    //     printf("%s", textFiles[i]);
-
-    // }
-
     /* CREATE PROCESSES */
     int pids[filesCount]; /* store process ids */
+
+    /* CREATE PIPES */
+    int pfds[filesCount][2];
 
     int global_fileCounter = 0;
     for (int c = 0; c < filesCount; c++)
     {
+        if (pipe(pfds[c]) < 0)
+        {
+            perror("Error opening pipe!\n");
+            exit(-1);
+        }
 
         pids[c] = fork(); /* FORK A PROCESS */
 
@@ -90,7 +87,7 @@ int main(int argc, int **argv)
 
             FILE *inputFileStream; /* single stream for a file */
 
-            //printf("CURRENT INPUT FILE: %s\n", currentInputFileDir);
+            // printf("CURRENT INPUT FILE: %s\n", currentInputFileDir);
 
             if (currentInputFileDir == NULL)
             {
@@ -101,7 +98,7 @@ int main(int argc, int **argv)
             // Open file content
             if ((inputFileStream = fopen(currentInputFileDir, "r")) == NULL)
             {
-                printf("Error opening %s", currentInputFileDir);
+                printf("Error opening %s\n", currentInputFileDir);
                 perror("Stack trace:\n");
                 exit(-1);
             }
@@ -151,7 +148,7 @@ int main(int argc, int **argv)
             char matchedLines[MAX_MATCHED_LINES][WORD_BUFFER];
             char line[LINE_BUFFER];
 
-            // Write all lines to an array
+            // Reset input stream
             rewind(inputFileStream);
 
             int j = 1;
@@ -163,29 +160,37 @@ int main(int argc, int **argv)
 
             fclose(inputFileStream);
 
-            // Write to output file
-            FILE *bufferOutputFileStream;
-
-            if ((bufferOutputFileStream = fopen(bufferOutputDir, "a")) == NULL)
-            {
-                perror("Error opening output file!\n");
-                return 0;
-            }
-
             int l = 0;
+            char msg[PIPE_BUFFER];
+
+            //printf("Message sent to PIPE:\n");
             for (int k = 0; k < MAX_MATCHED_LINES; k++)
             {
-
-                // TODO: write to buffer file
                 if (k == matchedLinesIndices[l])
-                {
-                    fprintf(bufferOutputFileStream, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
+                {   
+                    strcat(msg, currentInputFileDir);
+                    strcat(msg, ", ");
+                    char str_k[2];
+                    sprintf(str_k, "%d", k);
+                    strcat(msg, str_k);
+                    strcat(msg, ": ");
+                    strcat(msg, matchedLines[k]);
+                    strcat(msg, "\n");
+                    /* COMPOSE PIPE MESSAGE TO BE SENT */
+                    //sprintf(msg, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
+                    //printf("%s\n", msg);
+                    // fprintf(bufferOutputFileStream, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
                     l++;
                 }
             }
 
-            fclose(bufferOutputFileStream);
-
+            if (write(pfds[c][1], msg, sizeof(msg)) == -1)
+            {
+                perror("Error writing pipe!\n");
+                exit(-1);
+            }
+            /* WRITE TO PIPE */
+            close(pfds[c][1]); /* CLOSE WRITING TO PIPE */
             exit(0);
         }
 
@@ -202,31 +207,29 @@ int main(int argc, int **argv)
         wait(NULL);
     }
 
-    /* READ BUFFER OUTPUTS */
-    char outputBuffer[OUTPUT_BUFFER_SIZE];
-    int outputCharCount = 0;
+    // READ PIPES
+    char total_msg[PIPE_BUFFER];
     for (int i = 0; i < filesCount; i++)
     {
-        FILE *bufferFileStream;
-        if ((bufferFileStream = fopen(bufferOutputDirs[i], "r")) != NULL)
+        close(pfds[i][1]); /* CLOSE WRITING TO PIPE */
+        char msg[WORD_BUFFER];
+        if (read(pfds[i][0], msg, sizeof(msg)) == -1)
         {
-
-            int outputChar;
-            while (((outputChar = fgetc(bufferFileStream)) != EOF))
-            {
-                outputBuffer[outputCharCount++] = (char)outputChar;
-            }
+            perror("Error reading pipe message!\n");
+            return 1;
         }
 
-        fclose(bufferFileStream);
+        strcat(total_msg, msg);
+        strcat(total_msg, "\n");
+        close(pfds[i][0]); /* CLOSE READING PIPE */
     }
+     
+    //printf("Received message from PIPE:\n%s\n", total_msg);
 
-    //printf("Content:\n%s", outputBuffer); /* DEBUG */
-
-    /* WRITE TO THE OUTPUT FILE */
+    // /* WRITE TO THE OUTPUT FILE */
     FILE *outputFileStream;
 
-    char *outputDir = malloc(WORD_BUFFER);
+    char * outputDir = malloc(WORD_BUFFER);
 
     strcat(outputDir, ROOT_DIR);
     strcat(outputDir, outputFileName);
@@ -237,18 +240,7 @@ int main(int argc, int **argv)
         exit(-1);
     }
 
-    fputs(outputBuffer, outputFileStream);
+    fprintf(outputFileStream, "%s",total_msg);
     fclose(outputFileStream);
-
-    /* REMOVE BUFFER OUTPUTS */
-    for (int i = 0; i < filesCount; i++)
-    {
-        if(remove(bufferOutputDirs[i]) != 0)
-        {
-            printf("Unable to remove %s\n", bufferOutputDirs[i]);
-        }
-    }
-    
-
     return 0;
 }
