@@ -34,7 +34,7 @@ int main(int argc, int **argv)
     char *bufferOutputDirs[WORD_BUFFER];
 
     // SAVE all file names in array
-    char *inputFiles[1024];
+    char *inputFiles[100];
     int e = 0;
     for (int d = 3; d < argc - 1; d++)
     {
@@ -64,12 +64,15 @@ int main(int argc, int **argv)
         char *bufferOutputDir = malloc(WORD_BUFFER);
 
         // Make a complete dir for the argv[i]
+
+        //TODO: change with sprintf
         strcat(currentInputFileDir, ROOT_DIR);
         strcat(currentInputFileDir, fileDir);
 
         // printf("Global counter: %d\n", global_fileCounter);
 
         // create directories for buffer output files
+        //TODO: change with sprintf
         strcat(bufferOutputDir, ROOT_DIR);                       /* ./ */
         strcat(bufferOutputDir, BUFFER_DIR);                     /* ./buffer_ */
         strcat(bufferOutputDir, inputFiles[global_fileCounter]); /* ./buffer_input1.txt*/
@@ -91,7 +94,7 @@ int main(int argc, int **argv)
 
             if (currentInputFileDir == NULL)
             {
-                printf("No memory\n");
+                perror("Current input file is NULL\n");
                 return 0;
             }
 
@@ -151,6 +154,7 @@ int main(int argc, int **argv)
             // Reset input stream
             rewind(inputFileStream);
 
+            // GET lines by the matched lines indices  
             int j = 1;
             while ((fgets(line, LINE_BUFFER, inputFileStream)) != NULL)
             {
