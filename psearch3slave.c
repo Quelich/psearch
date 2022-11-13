@@ -3,20 +3,23 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <linux/mman.h>
+#include <fcntl.h>
+#include <memory.h>
 
-#define ROOT_DIR            "./"
-#define OUTPUT_BUFFER_SIZE  10240 /* 10 KB */
-#define WORD_BUFFER         1024  /* 1 KB */
-#define LINE_BUFFER         1024
-#define MAX_MATCHED_LINES   1024
-#define SMEM_BUFFER         1024
+#define ROOT_DIR "./"
+#define OUTPUT_BUFFER_SIZE 10240
+#define WORD_BUFFER 1024
+#define LINE_BUFFER 3072
+#define MAX_MATCHED_LINES 1024
+#define SMEM_BUFFER 4096
 
 int main(int argc, int **argv)
 {
-
     if (argc < 1)
     {
-        printf("Number of input files must be greater than 1!\n");
+        printf("[SLAVE] Number of input files must be greater than 1!\n");
         return 0;
     }
 
@@ -27,10 +30,10 @@ int main(int argc, int **argv)
     // Make a complete directory for the input file
     sprintf(currentInputFileDir, "%s%s", ROOT_DIR, inputFile);
 
-    //printf("Current file dir: %s\n", currentInputFileDir);
+    // printf("Current file dir: %s\n", currentInputFileDir);
     if (currentInputFileDir == NULL)
     {
-        perror("Current file directory is NULL!\n");
+        perror("[SLAVE] Current file directory is NULL!\n");
         return 1;
     }
 
@@ -39,10 +42,9 @@ int main(int argc, int **argv)
     // Open file content
     if ((inputFileStream = fopen(currentInputFileDir, "r")) == NULL)
     {
-        perror("Error opening input file!\n");
+        perror("[SLAVE] Error opening input file!\n");
         exit(-1);
     }
-    
 
     // Create matched lines indices array
     int matchedLinesIndices[MAX_MATCHED_LINES];
@@ -109,29 +111,73 @@ int main(int argc, int **argv)
     int l = 0;
     char msg[SMEM_BUFFER];
 
-    //printf("Message sent to SHARED MEMORY:\n");
-    /* COMPOSE PIPE MESSAGE TO BE SENT */
+    // printf("Message sent to SHARED MEMORY:\n");
+    /* COMPOSE A MESSAGE TO SEND SHARED MEMORY */
     for (int k = 0; k < MAX_MATCHED_LINES; k++)
     {
         if (k == matchedLinesIndices[l])
-        {   
-            //TODO: change with sprintf
-            strcat(msg, currentInputFileDir);
-            strcat(msg, ", ");
-            char str_k[2];
-            sprintf(str_k, "%d", k);
-            strcat(msg, str_k);
-            strcat(msg, ": ");
-            strcat(msg, matchedLines[k]);
-            strcat(msg, "\n");
-            
-            // sprintf(msg, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
-            //printf("%s\n", msg);
+        {
+            char line[LINE_BUFFER];
+
+            // TODO: change with sprintf
+            // strcat(msg, currentInputFileDir);
+            // strcat(msg, ", ");
+            // char str_k[2];
+            // sprintf(str_k, "%d", k);
+            // strcat(msg, str_k);
+            // strcat(msg, ": ");
+            // strcat(msg, matchedLines[k]);
+            // strcat(msg, "\n");
+            sprintf(line, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
+            strcat(msg, line);
+            // printf("%s\n", msg);
             //  fprintf(bufferOutputFileStream, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
             l++;
         }
-
-        // TODO: write message to shared memory
     }
+
+    const char *shdfdir = "./shared_output.txt";
+
+    int fd = open(shdfdir, O_CREAT | O_RDWR, (mode_t)0777);
+
+    if (fd < 0)
+    {
+        perror("[MASTER]Error opening file descriptor!\n");
+        exit(-1);
+    }
+
+    struct stat fstatus;
+    fstat(fd, &fstatus);
+    off_t fstatus_s = fstatus.st_size;
+
+    fallocate(fd, 0, fstatus_s, strlen(msg));
+
+
+    char *shdmem = (char *)mmap(0, fstatus_s + strlen(msg), PROT_READ | PROT_WRITE,
+                               MAP_SHARED, fd, 0);
+
+    if (shdmem == MAP_FAILED)
+    {
+        close(fd);
+        perror("[SLAVE] Error opening shared memory!\n");
+        exit(-1);
+    }
+
+    for (int i = 0; i < strlen(msg); i++)
+    {
+       shdmem[fstatus_s + i] = msg[i];
+    }
+
+    
+    // printf("SHARED MEMORY FROM CHILD:\n%s\n", addr);
+
+    if (munmap(shdmem, strlen(shdmem)) == -1)
+    {
+        perror("[SLAVE] Error freeing shared memory!\n");
+        exit(-1);
+    }
+
+    close(fd);
+
     return 0;
 }

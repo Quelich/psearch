@@ -3,70 +3,96 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <memory.h>
 #include <fcntl.h>
 
-#define OUTPUT_BUFFER_SIZE 1024 /* 1 MB */
+#define OUTPUT_BUFFER_SIZE 10240
+#define MAX_INPUT_COUNT 100
 
 int main(int argc, int **argv)
 {
 
     if (argc < 1)
     {
-        printf("Number of input files must be greater than 1!\n");
+        perror("[MASTER] Number of input files must be greater than 1!\n");
         return 0;
     }
 
-    char *smem = (char *)mmap(NULL, OUTPUT_BUFFER_SIZE,
-                      PROT_READ | PROT_WRITE,
-                      MAP_SHARED | MAP_ANONYMOUS, 0, 0);
-
-    if (smem == MAP_FAILED)
-    {
-        perror("Error creating shared memory!\n");
-        return 1;
-    }
-
-    /* DO NOT CHANGE: RESERVED */
+    const *shdfdir = "./shared_output.txt";
+    /* RESERVED */
     char *searchKeyword = argv[1];
-    char *inputFiles[100];
+    char *inputFiles[MAX_INPUT_COUNT];
     char *outputFileName = argv[argc - 1];
-    int e = 0;
+    int fileCount = 0;
     for (int d = 2; d < argc - 1; d++)
     {
-        inputFiles[e] = argv[d];
-        e++;
+        inputFiles[fileCount] = argv[d];
+        fileCount++;
     }
+    /* RESERVED */
 
-    char msg[OUTPUT_BUFFER_SIZE] =  "shake it off";
-
-
-    int p_id = fork();
-    
-    if (p_id < 0)
+    for (int i = 0; i < fileCount; i++)
     {
-        printf("Error creating child process!\n");
-        exit(-1);
+        char *inputFile = inputFiles[i];
+
+        int p_id = fork();
+
+        if (p_id < 0)
+        {
+            perror("[MASTER] Error creating child process!\n");
+            exit(-1);
+        }
+
+        else if (p_id == 0) /* CHILD PROCESS */
+        {
+            execlp("./psearch3slave", "psearch3slave", searchKeyword, inputFile, NULL);
+            exit(0);
+        }
     }
 
-    else if (p_id == 0) /* CHILD PROCESS */
-    {
-        smem = "mr robot";
-    }
-
-    else /* PARENT PROCESS */
+    /* PARENT PROCESS */
+    /* WAIT FOR CHILD PROCESSES TO END*/
+    for (int i = 0; i < fileCount; i++)
     {
         wait(NULL);
     }
 
-    printf("shared msg: %s\n", smem);
+    int fd = open(shdfdir, O_RDWR);
 
-    // if (munmap(smem, OUTPUT_BUFFER_SIZE) == -1)
-    // {
-    //     //remove file
-    //     perror("Error freeing shared memory!");
-    //     exit(-1);
-    // }
+    if (fd < 0)
+    {
+        perror("[MASTER]Error opening file descriptor!\n");
+        exit(-1);
+    }
+
+
+    struct stat fstatus;
+    fstat(fd, &fstatus);
+    off_t fstatus_s = fstatus.st_size;
+
+    char *shdmem = (char *)mmap(0, fstatus_s, PROT_READ, 
+                                            MAP_SHARED, fd, 0);
+
+    if (shdmem == MAP_FAILED)
+    {
+        close(fd);
+        perror("[MASTER] Error opening shared memory!\n");
+        exit(-1);
+    }
+
+    printf("[MASTER] SHARED MEMORY:\n%s\n", shdmem);
+
+    //TODO Write to output file
+
+    if (munmap(shdmem, strlen(shdmem)) == -1)
+    {
+        perror("[MASTER] Error freeing shared memory!\n");
+        exit(-1);
+    }
+
+    close(fd);
+    
 
     return 0;
 }
