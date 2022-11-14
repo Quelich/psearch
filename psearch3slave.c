@@ -9,7 +9,6 @@
 #include <memory.h>
 
 #define ROOT_DIR "./"
-#define OUTPUT_BUFFER_SIZE 10240
 #define WORD_BUFFER 1024
 #define LINE_BUFFER 3072
 #define MAX_MATCHED_LINES 1024
@@ -56,7 +55,7 @@ int main(int argc, int **argv)
     int matchedLinesCount = 0;
     int myChar;
     int lineCount = 0;
-    char word[WORD_BUFFER];
+    char word[WORD_BUFFER] = {0x0};
     int wordChCount = 0;
 
     // Read file by character to find matched line indices
@@ -89,7 +88,7 @@ int main(int argc, int **argv)
     }
 
     char matchedLines[MAX_MATCHED_LINES][WORD_BUFFER];
-    char line[LINE_BUFFER];
+    char line[LINE_BUFFER] = {0x0};
 
     // Reset input stream
     rewind(inputFileStream);
@@ -109,7 +108,7 @@ int main(int argc, int **argv)
         <input_file>, <matched_line_index>: <matched_line>
     */
     int l = 0;
-    char msg[SMEM_BUFFER];
+    char msg[SMEM_BUFFER] = {0x0};
 
     // printf("Message sent to SHARED MEMORY:\n");
     /* COMPOSE A MESSAGE TO SEND SHARED MEMORY */
@@ -117,7 +116,7 @@ int main(int argc, int **argv)
     {
         if (k == matchedLinesIndices[l])
         {
-            char line[LINE_BUFFER];
+            char line[LINE_BUFFER] = {0x0};
 
             // TODO: change with sprintf
             // strcat(msg, currentInputFileDir);

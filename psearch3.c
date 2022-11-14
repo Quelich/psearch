@@ -1,3 +1,9 @@
+/* FIX THIS
+
+- Not reading input1.txt
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +13,6 @@
 #include <memory.h>
 #include <fcntl.h>
 
-#define OUTPUT_BUFFER_SIZE 10240
 #define MAX_INPUT_COUNT 100
 
 int main(int argc, int **argv)
@@ -32,6 +37,7 @@ int main(int argc, int **argv)
     }
     /* RESERVED */
 
+    /* MAKE CHILD PROCESSES */
     for (int i = 0; i < fileCount; i++)
     {
         char *inputFile = inputFiles[i];
@@ -58,6 +64,7 @@ int main(int argc, int **argv)
         wait(NULL);
     }
 
+    /* READ FROM SHARED MEMORY */
     int fd = open(shdfdir, O_RDWR);
 
     if (fd < 0)
@@ -65,7 +72,6 @@ int main(int argc, int **argv)
         perror("[MASTER]Error opening file descriptor!\n");
         exit(-1);
     }
-
 
     struct stat fstatus;
     fstat(fd, &fstatus);
@@ -81,10 +87,20 @@ int main(int argc, int **argv)
         exit(-1);
     }
 
-    printf("[MASTER] SHARED MEMORY:\n%s\n", shdmem);
+    printf("[MASTER] SHARED MEMORY:\n%s\n", shdmem); /* DEBUG */
+    
+    /* WRITE TO THE OUTPUT FILE */
+    FILE * outputStream;
+    if ((outputStream = fopen(outputFileName, "w")) == NULL)
+    {
+        perror("[MASTER] Error opening output file!\n");
+        exit(-1);
+    }
 
-    //TODO Write to output file
+    fprintf(outputStream, "%s", shdmem);
 
+    
+    /* DEALLOCATE SHARED MEMORY */
     if (munmap(shdmem, strlen(shdmem)) == -1)
     {
         perror("[MASTER] Error freeing shared memory!\n");
@@ -92,7 +108,7 @@ int main(int argc, int **argv)
     }
 
     close(fd);
-    
+    //remove(shdfdir);
 
     return 0;
 }

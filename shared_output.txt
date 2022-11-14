@@ -1,10 +1,10 @@
-S�td./input1.txt, 2: name aosjdpoa jos paosd aosjdpoa
-
-./input1.txt, 4: namename apsod name
-S�td./input2.txt, 1: name asda
+./input2.txt, 1: name asda
 
 ./input2.txt, 4: asodfğpsğ asp ğadsaojsapd name asdjoasj
 
 ./input2.txt, 6: name asodkas named asojdpao sjoaağ oaksd
 
 ./input2.txt, 7: alskn name asokd aosk asd
+./input1.txt, 2: name aosjdpoa jos paosd aosjdpoa
+
+./input1.txt, 4: namename apsod name
