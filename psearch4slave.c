@@ -1,18 +1,26 @@
+/*
+    WRITE TO SEMAPHORE
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <linux/mman.h>
-#include <fcntl.h>
+#include <sys/ipc.h>
 #include <memory.h>
+#include <fcntl.h>
+#include <semaphore.h>
 
 #define ROOT_DIR "./"
 #define WORD_BUFFER 1024
 #define LINE_BUFFER 3072
 #define MAX_MATCHED_LINES 1024
-#define SMEM_BUFFER 4096
+#define SHM_BUFFER 4096
+#define SEM_PRODUCER_FNAME "/producer"
+#define SEM_CONSUMER_FNAME "/consumer"
+#define SHM_FNAME "/shdmem"
 
 int main(int argc, int **argv)
 {
@@ -58,7 +66,7 @@ int main(int argc, int **argv)
     char word[WORD_BUFFER] = {0x0};
     int wordChCount = 0;
 
-    // Read file by character to find matched line indices
+    /* READ FILE AND FIND KEYWORD */
     while (((myChar = fgetc(inputFileStream)) != EOF))
     {
         if (myChar == '\n')
@@ -85,7 +93,7 @@ int main(int argc, int **argv)
             word[wordChCount++] = (char)myChar;
             word[wordChCount] = '\0';
         }
-    }
+    } /* end -- READ FILE AND FIND KEYWORD */
 
     char matchedLines[MAX_MATCHED_LINES][WORD_BUFFER];
     char line[LINE_BUFFER] = {0x0};
@@ -104,14 +112,13 @@ int main(int argc, int **argv)
     fclose(inputFileStream);
 
     /*
-          COMPOSE A MESSAGE TO SEND SHARED MEMORY
-          format: <input_file>, <matched_line_index>: <matched_line>
+        CREATE THE MESSAGE with format:
+        <input_file>, <matched_line_index>: <matched_line>
     */
     int l = 0;
-    char msg[SMEM_BUFFER] = {0x0};
+    char msg[SHM_BUFFER] = {0x0};
 
-    // printf("Message sent to SHARED MEMORY:\n");
-  
+    /* COMPOSE A MESSAGE TO SEND SHARED MEMORY */
     for (int k = 0; k < MAX_MATCHED_LINES; k++)
     {
         if (k == matchedLinesIndices[l])
@@ -119,31 +126,38 @@ int main(int argc, int **argv)
             char line[LINE_BUFFER] = {0x0};
             sprintf(line, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
             strcat(msg, line);
-            // printf("%s\n", msg); 
             l++;
         }
     }
 
-    const char *shdfdir = "./shared_output.txt";
+    // printf("Composing message: %s\n", msg);
 
-    int fd = open(shdfdir, O_CREAT | O_RDWR, (mode_t)0777);
+    /* SETUP SEMAPHORES */
+    sem_t *sem_prod = sem_open(SEM_PRODUCER_FNAME, 0);
+    sem_t *sem_cons = sem_open(SEM_CONSUMER_FNAME, 0);
+    int fd = shm_open(SHM_FNAME, O_CREAT | O_RDWR, (mode_t)0777);
 
-    if (fd < 0)
+    if (sem_prod == SEM_FAILED)
     {
-        perror("[MASTER]Error opening file descriptor!\n");
+        perror("[SLAVE] sem_open/producer");
         exit(-1);
     }
 
-    struct stat fstatus;
-    fstat(fd, &fstatus);
-    off_t fstatus_s = fstatus.st_size;
+    if (sem_cons == SEM_FAILED)
+    {
+        perror("[SLAVE] sem_open/consumer");
+        exit(-1);
+    }
 
-    fallocate(fd, 0, fstatus_s, strlen(msg));
+    if (fd < 0)
+    {
+        perror("[SLAVE]Error opening file descriptor!\n");
+        exit(-1);
+    }
 
-
-    char *shdmem = (char *)mmap(0, fstatus_s + strlen(msg), PROT_READ | PROT_WRITE,
-                               MAP_SHARED, fd, 0);
-
+    char *shdmem = (char *)mmap(0, SHM_BUFFER,
+                                PROT_READ | PROT_WRITE,
+                                MAP_SHARED, fd, 0);
     if (shdmem == MAP_FAILED)
     {
         close(fd);
@@ -151,21 +165,20 @@ int main(int argc, int **argv)
         exit(-1);
     }
 
-    for (int i = 0; i < strlen(msg); i++)
-    {
-       shdmem[fstatus_s + i] = msg[i];
-    }
+    /* WRITE TO SHARED MEMORY WITH SYNCHRONIZATION */
+    sem_wait(sem_cons);
+    sprintf(shdmem, "%s", msg);
+    printf("[SLAVE] Writing %s\n", shdmem);
+    sem_post(sem_prod);
 
-    
-    // printf("SHARED MEMORY FROM CHILD:\n%s\n", addr);
-
+    /* DEALLOCATE RESOURCES */
+    sem_close(sem_prod);
+    sem_close(sem_cons);
     if (munmap(shdmem, strlen(shdmem)) == -1)
     {
         perror("[SLAVE] Error freeing shared memory!\n");
         exit(-1);
     }
-
-    close(fd);
 
     return 0;
 }

@@ -15,4 +15,5 @@ Psearch uses different Interprocess Communication(IPC) methods:
  ## TEST
  - fix wrong line number for psearch1-2-3.
  - use 100 MB files
+ - calculate elapsed time for the report
  - use makefile
