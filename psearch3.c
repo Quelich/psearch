@@ -1,8 +1,4 @@
-/* FIX THIS
 
-- Not reading input1.txt
-
-*/
 
 #include <stdio.h>
 #include <stdlib.h>
