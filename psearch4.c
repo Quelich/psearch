@@ -4,24 +4,24 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/ipc.h>
 #include <memory.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <sys/shm.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <errno.h>
 
 #define MAX_INPUT_COUNT 100
-#define CHILD_EXEC_DIR "./psearch4slave"
-#define CHILD_EXEC_CMD "psearch4slave"
-#define SEM_PRODUCER_FNAME "/producer"
-#define SEM_CONSUMER_FNAME "/consumer"
-#define SHM_FNAME "/shdmem"
+#define SEM_FNAME "semaphore"
+#define SH_FNAME "/dev/null"
 #define SHM_BUFFER 4096
-#define SPH_BUFFER 1024
+#define SPH_BUFFER 512
 
 int main(int argc, int **argv)
 {
@@ -36,103 +36,94 @@ int main(int argc, int **argv)
     char *searchKeyword = argv[1];
     char *inputFiles[MAX_INPUT_COUNT];
     char *outputFileName = argv[argc - 1];
-    int fileCount = 0;
+    int fileCount = 0; /* also fork count */
     for (int d = 2; d < argc - 1; d++)
     {
         inputFiles[fileCount] = argv[d];
         fileCount++;
-    } /* end -- RESERVED */
+    }
 
-    sem_t *sem_prod = sem_open(SEM_PRODUCER_FNAME, 0);
-    sem_t *sem_cons = sem_open(SEM_CONSUMER_FNAME, 1);
-    int fd = shm_open(SHM_FNAME, O_RDWR, (mode_t)0777);
+    int i;
+    pid_t pid;
+    key_t shm_key;
+    int shm_id;
+    int fork_count = fileCount;
+    unsigned int sem_value;
 
-    if (sem_prod == SEM_FAILED)
+    shm_key = ftok(SH_FNAME, 0);
+
+    if (shm_key == -1)
     {
-        perror("[MASTER] sem_open/producer");
+        perror("error creating shm_key\n");
+        exit(EXIT_FAILURE);
+    }
+
+    shm_id = shmget(shm_key, sizeof(int), 0644 | IPC_CREAT);
+
+    if (shm_id < 0)
+    {
+        perror("Error creating shm_id\n");
         exit(-1);
     }
 
-    if (sem_cons == SEM_FAILED)
+    char *shrd_value = shmat(shm_id, NULL, 0);
+
+    sem_t * sem = sem_open(SEM_FNAME, O_CREAT | O_EXCL, 0644, sem_value);
+
+    if (sem == SEM_FAILED)
     {
-        perror("[MASTER] sem_open/consumer");
-        exit(-1);
+        perror("error opening semaphore");
+        exit(EXIT_FAILURE);
     }
 
-    if (fd < 0)
-    {
-        perror("[MASTER]Error opening file descriptor!\n");
-        exit(-1);
-    }
-
-    /* MAKE & EXECUTE CHILD PROCESSES */
-    for (int i = 0; i < fileCount; i++)
+    for (i = 0; i < fork_count; i++)
     {
         char *inputFile = inputFiles[i];
-        int p_id = fork();
+        pid = fork();
 
-        if (p_id < 0)
+        if (pid < 0)
         {
-            perror("[MASTER] Error creating child process!\n");
-            exit(-1);
+            perror("error creating fork");
+            sem_unlink(SEM_FNAME);
+            sem_close(sem);
+            exit(EXIT_FAILURE);
         }
 
-        else if (p_id == 0) /* CHILD PROCESS */
+        else if (pid == 0) /* CHILD PROCESS */
         {
-            execlp(CHILD_EXEC_DIR, CHILD_EXEC_CMD, searchKeyword, inputFile, NULL);
-            exit(0);
+            execlp("./psearch3slave", "psearch3slave", searchKeyword, inputFile, NULL);
+            break;
         }
     }
 
-    for (int i = 0; i < fileCount; i++)
+    if (pid == 0) /* CHILD PROCESS */
     {
-        wait(NULL);
+        sem_wait(sem);
+        printf("[CHILD] - %d is in critical section\n", i);
+
+        // char msg[50] = "Hello from";
+        //sprintf(shrd_value, "%s #%d", msg, i);
+        // printf("[CHILD] - %d: new value of shrd_value = %s\n", i, shrd_value);
+        sem_post(sem);
+        exit(EXIT_SUCCESS);
     }
-
-    char *shdmem = (char *)mmap(0, SHM_BUFFER,
-                                PROT_READ | PROT_WRITE,
-                                MAP_SHARED, fd, 0);
-
-    if (shdmem == MAP_FAILED)
+    else if (pid > 0) /* PARENT PROCESS */
     {
-        close(fd);
-        perror("[MASTER] Error opening shared memory!\n");
-        exit(-1);
-    }
-
-    char final_msg[SHM_BUFFER] = {0x0};
-    // printf("[MASTER] listerning slaves\n");
-    /* WRITE TO THE SHARED MEMORY */
-    while (true)
-    {
-        sem_wait(sem_prod);
-        char msg[SPH_BUFFER] = {0x0};
-        strcpy(msg, shdmem);
-        printf("[MASTER] MESSAGE RECEIVED:\n%s\n", msg);
-        strcat(final_msg, msg);
-
-        /* WRITE TO THE OUTPUT FILE */
-        FILE *outputStream;
-        if ((outputStream = fopen(outputFileName, "w")) == NULL)
+        while (pid = waitpid(-1, NULL, 0))
         {
-            perror("[MASTER] Error opening output file!\n");
-            exit(-1);
+            if (errno == ECHILD)
+            {
+                break;
+            }
         }
 
-        fprintf(outputStream, "%s", final_msg);
-
-        // shdmem[0] = 0; /* RESET SHARED MEMORY */
-        sem_post(sem_cons);
+        printf("All children exited\n%s", shrd_value);
+        shmdt(shrd_value);
+        shmctl(shm_id, IPC_RMID, 0);
+        sem_unlink(SEM_FNAME);
+        sem_close(sem);
+        exit(EXIT_SUCCESS);
     }
 
-    sem_close(sem_cons);
-    sem_close(sem_prod);
-
-    if (munmap(shdmem, strlen(shdmem)) == -1)
-    {
-        perror("[MASTER] Error freeing shared memory!\n");
-        exit(-1);
-    }
-
-    return 0;
+    return EXIT_SUCCESS;
 }

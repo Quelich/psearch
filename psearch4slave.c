@@ -6,21 +6,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/ipc.h>
 #include <memory.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <sys/shm.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <errno.h>
 
 #define ROOT_DIR "./"
 #define WORD_BUFFER 1024
 #define LINE_BUFFER 3072
 #define MAX_MATCHED_LINES 1024
 #define SHM_BUFFER 4096
-#define SEM_PRODUCER_FNAME "/producer"
-#define SEM_CONSUMER_FNAME "/consumer"
-#define SHM_FNAME "/shdmem"
+#define SEM_FNAME "semaphore"
+#define SH_FNAME "/dev/null"
 
 int main(int argc, int **argv)
 {
@@ -118,7 +121,7 @@ int main(int argc, int **argv)
     int l = 0;
     char msg[SHM_BUFFER] = {0x0};
 
-    /* COMPOSE A MESSAGE TO SEND SHARED MEMORY */
+    /* COMPOSE A MESSAGE*/
     for (int k = 0; k < MAX_MATCHED_LINES; k++)
     {
         if (k == matchedLinesIndices[l])
@@ -132,53 +135,14 @@ int main(int argc, int **argv)
 
     // printf("Composing message: %s\n", msg);
 
-    /* SETUP SEMAPHORES */
-    sem_t *sem_prod = sem_open(SEM_PRODUCER_FNAME, 0);
-    sem_t *sem_cons = sem_open(SEM_CONSUMER_FNAME, 0);
-    int fd = shm_open(SHM_FNAME, O_CREAT | O_RDWR, (mode_t)0777);
-
-    if (sem_prod == SEM_FAILED)
-    {
-        perror("[SLAVE] sem_open/producer");
-        exit(-1);
-    }
-
-    if (sem_cons == SEM_FAILED)
-    {
-        perror("[SLAVE] sem_open/consumer");
-        exit(-1);
-    }
-
-    if (fd < 0)
-    {
-        perror("[SLAVE]Error opening file descriptor!\n");
-        exit(-1);
-    }
-
-    char *shdmem = (char *)mmap(0, SHM_BUFFER,
-                                PROT_READ | PROT_WRITE,
-                                MAP_SHARED, fd, 0);
-    if (shdmem == MAP_FAILED)
-    {
-        close(fd);
-        perror("[SLAVE] Error opening shared memory!\n");
-        exit(-1);
-    }
+       char *shrd_value = shmat(shm_id, NULL, 0);
+    sem_t *sem = sem_open(SEM_FNAME, O_CREAT | O_EXCL, 0644, sem_value);
 
     /* WRITE TO SHARED MEMORY WITH SYNCHRONIZATION */
     sem_wait(sem_cons);
-    sprintf(shdmem, "%s", msg);
+    sprintf(shrd_value, "%s", msg);
     printf("[SLAVE] Writing %s\n", shdmem);
     sem_post(sem_prod);
-
-    /* DEALLOCATE RESOURCES */
-    sem_close(sem_prod);
-    sem_close(sem_cons);
-    if (munmap(shdmem, strlen(shdmem)) == -1)
-    {
-        perror("[SLAVE] Error freeing shared memory!\n");
-        exit(-1);
-    }
 
     return 0;
 }
