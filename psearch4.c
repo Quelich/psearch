@@ -21,8 +21,9 @@
 #define MAX_INPUT_COUNT 50
 #define SEM_PROD_FNAME "producer"
 #define SEM_CONS_FNAME "consumer"
+#define FD_FNAME "semaphore"
 #define SH_FNAME "/dev/null"
-#define SHM_BUFFER 4096
+#define SHM_BUFFER 2048 /* 10 MB */
 #define MSG_BUFFER 1024
 #define TOTAL_MSG_BUFFER 10240
 #define SPH_BUFFER 512
@@ -49,29 +50,38 @@ int main(int argc, int **argv)
 
     int i;
     pid_t pid;
-    key_t shm_key;
-    int shm_id;
     int fork_count = fileCount;
-    unsigned int sem_value;
 
-    shm_key = ftok(SH_FNAME, 0);
+    // unsigned int sem_value;
+    // key_t shm_key;
+    // int shm_id;
 
-    if (shm_key == -1)
-    {
-        perror("[MASTER]\nerror creating shm_key\n");
-        exit(EXIT_FAILURE);
-    }
+    // shm_key = ftok(SH_FNAME, 0);
 
-    shm_id = shmget(shm_key, MSG_BUFFER, 0644 | IPC_CREAT);
+    // if (shm_key == -1)
+    // {
+    //     perror("[MASTER]\nerror creating shm_key\n");
+    //     exit(EXIT_FAILURE);
+    // }
 
-    if (shm_id < 0)
-    {
-        perror("Error creating shm_id\n");
-        exit(-1);
-    }
+    // shm_id = shmget(shm_key, MSG_BUFFER, 0644 | IPC_CREAT);
+
+    // if (shm_id < 0)
+    // {
+    //     perror("Error creating shm_id\n");
+    //     exit(-1);
+    // }
 
     /* ATTACH MEMORY */
-    char *memblock = shmat(shm_id, NULL, 0);
+    // char *memblock = shmat(shm_id, NULL, 0);
+    int fd = shm_open(FD_FNAME, O_CREAT | O_RDWR, 0666);
+
+    if (ftruncate(fd, SHM_BUFFER) == -1)
+    {
+        perror("ftruncate");
+    }
+
+    char *memblock = (char *)mmap(0, SHM_BUFFER, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     sem_unlink(SEM_PROD_FNAME);
     sem_unlink(SEM_CONS_FNAME);
@@ -92,7 +102,7 @@ int main(int argc, int **argv)
         exit(EXIT_FAILURE);
     }
 
-    /* CREATE CHILD PROCESSES */ 
+    /* CREATE CHILD PROCESSES */
     for (i = 0; i < fork_count; i++)
     {
         char *inputFile = inputFiles[i];
@@ -113,6 +123,7 @@ int main(int argc, int **argv)
             execlp("./psearch4slave", "psearch4slave", searchKeyword, inputFile, NULL);
             break;
         }
+        wait(NULL);
     }
 
     char total_msg[TOTAL_MSG_BUFFER];
@@ -124,7 +135,7 @@ int main(int argc, int **argv)
             sem_wait(prod);
             if (strlen(memblock) > 0)
             {
-              
+
                 /* READING CHILD PROCESSES */
                 char child_msg[MSG_BUFFER] = {0x0};
                 sprintf(child_msg, "%s", memblock);
@@ -141,15 +152,6 @@ int main(int argc, int **argv)
     else if (pid > 0) /* PARENT PROCESS */
     {
 
-        /* WAIT CHILD PROCESSES TO FINISH */
-        while (pid = waitpid(-1, NULL, 0))
-        {
-
-            if (errno == ECHILD)
-            {
-                break;
-            }
-        }
 
         printf("[MASTER]\nTotal Message:\n%s", memblock);
 
@@ -165,7 +167,7 @@ int main(int argc, int **argv)
         fclose(outputStream);
 
         shmdt(memblock);
-        shmctl(shm_id, IPC_RMID, 0);
+        // shmctl(shm_id, IPC_RMID, 0);
         // sem_unlink(SEM_PROD_FNAME);
         // sem_unlink(SEM_CONS_FNAME);
         sem_close(prod);

@@ -21,13 +21,17 @@
 #define WORD_BUFFER 1024
 #define LINE_BUFFER 3072
 #define MAX_MATCHED_LINES 1024
-#define SHM_BUFFER 4096
+#define SHM_BUFFER 2048 /* 10 mb */
 #define SEM_PROD_FNAME "producer"
 #define SEM_CONS_FNAME "consumer"
 #define SH_FNAME "/dev/null"
+#define FD_FNAME "semaphore"
 
 int main(int argc, int **argv)
 {
+
+    sem_unlink(SEM_PROD_FNAME);
+    sem_unlink(SEM_CONS_FNAME);
     if (argc < 1)
     {
         perror("[SLAVE] Number of input files must be greater than 1!\n");
@@ -135,29 +139,35 @@ int main(int argc, int **argv)
     }
 
     // printf("Composing message: %s\n", msg);
-    key_t shm_key;
-    int shm_id;
-    unsigned int sem_value;
+    // key_t shm_key;
+    // int shm_id;
+    // unsigned int sem_value;
 
-    shm_key = ftok(SH_FNAME, 0);
+    // shm_key = ftok(SH_FNAME, 0);
 
-    if (shm_key == -1)
+    // if (shm_key == -1)
+    // {
+    //     perror("[SLAVE]\nError creating shm_key\n");
+    //     exit(EXIT_FAILURE);
+    // }
+
+    // shm_id = shmget(shm_key, sizeof(int), 0644 | IPC_CREAT);
+
+    // if (shm_id < 0)
+    // {
+    //     perror("[SLAVE]\nError creating shm_id\n");
+    //     exit(-1);
+    // }
+
+    int fd = shm_open(FD_FNAME, O_CREAT | O_RDWR, 0666);
+    if (ftruncate(fd, SHM_BUFFER) == -1)
     {
-        perror("[SLAVE]\nError creating shm_key\n");
-        exit(EXIT_FAILURE);
+        perror("ftruncate");
     }
+    char *memblock = (char *)mmap(0, SHM_BUFFER, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-    shm_id = shmget(shm_key, sizeof(int), 0644 | IPC_CREAT);
+    // char *memblock = shmat(shm_id, NULL, 0);
 
-    if (shm_id < 0)
-    {
-        perror("[SLAVE]\nError creating shm_id\n");
-        exit(-1);
-    }
-
-    char *memblock = shmat(shm_id, NULL, 0);
-    sem_unlink(SEM_PROD_FNAME);
-    sem_unlink(SEM_CONS_FNAME);
     sem_t *prod = sem_open(SEM_PROD_FNAME, O_CREAT | O_EXCL, 0644, 0);
 
     if (prod == SEM_FAILED)
@@ -171,19 +181,19 @@ int main(int argc, int **argv)
     if (cons == SEM_FAILED)
     {
         perror("[SLAVE]\nsemaphore/consumer");
-        //exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
     }
 
     /* WRITE TO SHARED MEMORY WITH SYNCHRONIZATION */
     sem_wait(cons);
-    //sleep(1); /* WARNING: IF YOU DO NOT WAIT CONSUMER, THE OUTPUT WILL BE INCOMPLETE*/
+    // sleep(1); /* WARNING: IF YOU DO NOT WAIT CONSUMER, THE OUTPUT WILL BE INCOMPLETE*/
     strcat(memblock, msg);
     // printf("[SLAVE]\n Writing \n%s\n", memblock);
     sem_post(prod);
 
     /* DEATTACH MEMORY */
-    // shmdt(memblock);
-    shmctl(shm_id, IPC_RMID, 0);
+    shmdt(memblock);
+    // shmctl(shm_id, IPC_RMID, 0);
     sem_close(prod);
     sem_close(cons);
     sem_unlink(SEM_PROD_FNAME);
