@@ -3,6 +3,7 @@
 */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -18,10 +19,15 @@
 #include <errno.h>
 
 #define MAX_INPUT_COUNT 100
-#define SEM_FNAME "semaphore"
+#define SEM_PROD_FNAME "producer"
+#define SEM_CONS_FNAME "consumer"
 #define SH_FNAME "/dev/null"
 #define SHM_BUFFER 4096
+#define MSG_BUFFER 1024
+#define TOTAL_MSG_BUFFER 10240
 #define SPH_BUFFER 512
+
+const char total_msg[TOTAL_MSG_BUFFER];
 
 int main(int argc, int **argv)
 {
@@ -54,7 +60,7 @@ int main(int argc, int **argv)
 
     if (shm_key == -1)
     {
-        perror("error creating shm_key\n");
+        perror("[MASTER]\nerror creating shm_key\n");
         exit(EXIT_FAILURE);
     }
 
@@ -66,16 +72,29 @@ int main(int argc, int **argv)
         exit(-1);
     }
 
-    char *shrd_value = shmat(shm_id, NULL, 0);
+    /* ATTACH MEMORY */
+    char *memblock = shmat(shm_id, NULL, 0);
 
-    sem_t * sem = sem_open(SEM_FNAME, O_CREAT | O_EXCL, 0644, sem_value);
+    sem_unlink(SEM_PROD_FNAME);
+    sem_unlink(SEM_CONS_FNAME);
 
-    if (sem == SEM_FAILED)
+    sem_t *prod = sem_open(SEM_PROD_FNAME, O_CREAT | O_EXCL, 0644, 0);
+
+    if (prod == SEM_FAILED)
     {
-        perror("error opening semaphore");
+        perror("[MASTER]\nsemaphore/producer");
         exit(EXIT_FAILURE);
     }
 
+    sem_t *cons = sem_open(SEM_CONS_FNAME, O_CREAT | O_EXCL, 0644, 1);
+
+    if (cons == SEM_FAILED)
+    {
+        perror("[MASTER]\nsemaphore/consumer");
+        exit(EXIT_FAILURE);
+    }
+
+    /* CREATE CHILD PROCESSES */
     for (i = 0; i < fork_count; i++)
     {
         char *inputFile = inputFiles[i];
@@ -84,31 +103,46 @@ int main(int argc, int **argv)
         if (pid < 0)
         {
             perror("error creating fork");
-            sem_unlink(SEM_FNAME);
-            sem_close(sem);
+            sem_unlink(SEM_PROD_FNAME);
+            sem_close(prod);
+            sem_unlink(SEM_CONS_FNAME);
+            sem_close(cons);
             exit(EXIT_FAILURE);
         }
 
         else if (pid == 0) /* CHILD PROCESS */
         {
-            execlp("./psearch3slave", "psearch3slave", searchKeyword, inputFile, NULL);
-            break;
+            execlp("./psearch4slave", "psearch4slave", searchKeyword, inputFile, NULL);
+            exit(EXIT_SUCCESS);
         }
     }
 
+    
     if (pid == 0) /* CHILD PROCESS */
     {
-        sem_wait(sem);
-        printf("[CHILD] - %d is in critical section\n", i);
+        while (true)
+        {
+            sem_wait(prod);
 
-        // char msg[50] = "Hello from";
-        //sprintf(shrd_value, "%s #%d", msg, i);
-        // printf("[CHILD] - %d: new value of shrd_value = %s\n", i, shrd_value);
-        sem_post(sem);
+            if (strlen(memblock) > 0)
+            {
+                /* READING CHILD PROCESSES */
+                char child_msg[MSG_BUFFER];
+                sprintf(child_msg, "%s\n", memblock);
+                strcat(total_msg, child_msg);
+                memblock[0] = 0; /* RESET SHARED MEMORY */
+                break;
+            }
+
+            sem_post(cons);
+        }
+
         exit(EXIT_SUCCESS);
     }
+
     else if (pid > 0) /* PARENT PROCESS */
     {
+        /* WAIT CHILD PROCESSES TO FINISH */
         while (pid = waitpid(-1, NULL, 0))
         {
             if (errno == ECHILD)
@@ -117,11 +151,13 @@ int main(int argc, int **argv)
             }
         }
 
-        printf("All children exited\n%s", shrd_value);
-        shmdt(shrd_value);
+        printf("[MASTER]\nTotal Message:\n%s\n", memblock);
+        shmdt(memblock);
         shmctl(shm_id, IPC_RMID, 0);
-        sem_unlink(SEM_FNAME);
-        sem_close(sem);
+        // sem_unlink(SEM_PROD_FNAME);
+        // sem_unlink(SEM_CONS_FNAME);
+        sem_close(prod);
+        sem_close(cons);
         exit(EXIT_SUCCESS);
     }
 

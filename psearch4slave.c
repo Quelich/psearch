@@ -22,7 +22,8 @@
 #define LINE_BUFFER 3072
 #define MAX_MATCHED_LINES 1024
 #define SHM_BUFFER 4096
-#define SEM_FNAME "semaphore"
+#define SEM_PROD_FNAME "producer"
+#define SEM_CONS_FNAME "consumer"
 #define SH_FNAME "/dev/null"
 
 int main(int argc, int **argv)
@@ -119,7 +120,7 @@ int main(int argc, int **argv)
         <input_file>, <matched_line_index>: <matched_line>
     */
     int l = 0;
-    char msg[SHM_BUFFER] = {0x0};
+    char msg[SHM_BUFFER] = {0x0}; /* MESSAGE TO SEND PARENT PROCESS */
 
     /* COMPOSE A MESSAGE*/
     for (int k = 0; k < MAX_MATCHED_LINES; k++)
@@ -134,15 +135,55 @@ int main(int argc, int **argv)
     }
 
     // printf("Composing message: %s\n", msg);
+    key_t shm_key;
+    int shm_id;
+    unsigned int sem_value;
 
-       char *shrd_value = shmat(shm_id, NULL, 0);
-    sem_t *sem = sem_open(SEM_FNAME, O_CREAT | O_EXCL, 0644, sem_value);
+    shm_key = ftok(SH_FNAME, 0);
+
+    if (shm_key == -1)
+    {
+        perror("[SLAVE]\nError creating shm_key\n");
+        exit(EXIT_FAILURE);
+    }
+
+    shm_id = shmget(shm_key, sizeof(int), 0644 | IPC_CREAT);
+
+    if (shm_id < 0)
+    {
+        perror("[SLAVE]\nError creating shm_id\n");
+        exit(-1);
+    }
+
+    char *memblock = shmat(shm_id, NULL, 0);
+    sem_unlink(SEM_PROD_FNAME);
+    sem_unlink(SEM_CONS_FNAME);
+    sem_t *prod = sem_open(SEM_PROD_FNAME, O_CREAT | O_EXCL, 0644, 0);
+
+    if (prod == SEM_FAILED)
+    {
+        perror("[SLAVE]\nsemaphore/producer");
+        exit(EXIT_FAILURE);
+    }
+
+    sem_t *cons = sem_open(SEM_CONS_FNAME, O_CREAT | O_EXCL, 0644, 1);
+
+    if (cons == SEM_FAILED)
+    {
+        perror("[SLAVE]\nsemaphore/consumer");
+        exit(EXIT_FAILURE);
+    }
 
     /* WRITE TO SHARED MEMORY WITH SYNCHRONIZATION */
-    sem_wait(sem_cons);
-    sprintf(shrd_value, "%s", msg);
-    printf("[SLAVE] Writing %s\n", shdmem);
-    sem_post(sem_prod);
+    sem_wait(cons);
+    strcpy(memblock, msg);
+    printf("[SLAVE]\n Writing \n%s\n", memblock);
+    sem_post(prod);
 
+    /* DEATTACH MEMORY */
+    shmdt(memblock);
+    shmctl(shm_id, IPC_RMID, 0);
+    // sem_close(prod);
+    // sem_close(cons);
     return 0;
 }
