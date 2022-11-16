@@ -156,7 +156,7 @@ int main(int argc, int **argv)
                 {   
 
                     char line[1300] = {0x0};
-                    sprintf(line, "%s, %d: %s\n", fileDir, k, matchedLines[k]);
+                    sprintf(line, "%s, %d: %s", fileDir, k, matchedLines[k]);
                     strcat(msg, line);
                     l++;
                 }
@@ -198,7 +198,7 @@ int main(int argc, int **argv)
         }
 
         strcat(total_msg, msg); /* DO NOT CHANGE */
-        strcat(total_msg, "\n"); /* DO NOT CHANGE */
+      
         close(pfds[i][0]); /* CLOSE READING PIPE */
     }
 

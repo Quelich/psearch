@@ -118,7 +118,7 @@ int main(int argc, int **argv)
         if (k == matchedLinesIndices[l])
         {
             char line[LINE_BUFFER] = {0x0};
-            sprintf(line, "%s, %d: %s\n", inputFile, k, matchedLines[k]);
+            sprintf(line, "%s, %d: %s", inputFile, k, matchedLines[k]);
             strcat(msg, line);
             // printf("%s\n", msg); 
             l++;

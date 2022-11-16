@@ -8,6 +8,7 @@
 #include <fcntl.h>
 
 #define MAX_INPUT_COUNT 100
+#define SHD_FNAME "./shared_output.txt"
 
 int main(int argc, int **argv)
 {
@@ -18,7 +19,7 @@ int main(int argc, int **argv)
         return 0;
     }
 
-    const *shdfdir = "./shared_output.txt";
+    
     /* RESERVED */
     char *searchKeyword = argv[1];
     char *inputFiles[MAX_INPUT_COUNT];
@@ -49,17 +50,19 @@ int main(int argc, int **argv)
             execlp("./psearch3slave", "psearch3slave", searchKeyword, inputFile, NULL);
             exit(0);
         }
+
+         wait(NULL);
     }
 
     /* PARENT PROCESS */
     /* WAIT FOR CHILD PROCESSES TO END*/
-    for (int i = 0; i < fileCount; i++)
-    {
-        wait(NULL);
-    }
+    // for (int i = 0; i < fileCount; i++)
+    // {
+       
+    // }
 
     /* READ FROM SHARED MEMORY */
-    int fd = open(shdfdir, O_RDWR);
+    int fd = open(SHD_FNAME, O_RDWR);
 
     if (fd < 0)
     {
@@ -81,7 +84,7 @@ int main(int argc, int **argv)
         exit(-1);
     }
 
-    printf("[MASTER] SHARED MEMORY:\n%s\n", shdmem); /* DEBUG */
+    //printf("[MASTER] SHARED MEMORY:\n%s\n", shdmem); /* DEBUG */
     
     /* WRITE TO THE OUTPUT FILE */
     FILE * outputStream;
@@ -102,7 +105,7 @@ int main(int argc, int **argv)
     }
 
     close(fd);
-    remove(shdfdir);
+    remove(SHD_FNAME);
 
     return 0;
 }
