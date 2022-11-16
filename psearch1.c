@@ -1,19 +1,13 @@
-/* FIX THIS
-
-- input1-3.txt keyword is in the 2th line but it prints as 3rd
-
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
 
-//#define BUFFER_SIZE 209715200 // 200 MB
+
 #define ROOT_DIR "./"
 #define BUFFER_DIR "buffer_"
-#define OUTPUT_BUFFER_SIZE 10240
+#define OUTPUT_BUFFER_SIZE 10240 /* 10 mb */
 #define WORD_BUFFER 1024
 #define LINE_BUFFER 1024
 #define MAX_MATCHED_LINES 1024
