@@ -16,7 +16,8 @@
 #define WORD_BUFFER 1024
 #define LINE_BUFFER 1024
 #define MAX_MATCHED_LINES 1024
-#define MAX_OUTPUT_FILES 10
+#define MAX_FILE_NUMBER 20
+
 
 int main(int argc, int **argv)
 {
@@ -31,10 +32,10 @@ int main(int argc, int **argv)
     char *searchKeyword = argv[1];         /* DO NOT CHANGE: reserved for the keyword*/
     int filesCount = atoi(argv[2]);        /* DO NOT CHANGE: reserved for the files count*/
     char *outputFileName = argv[argc - 1]; /* DO NOT CHANGE: reserved for the output file*/
-    char bufferOutputDirs[MAX_OUTPUT_FILES][WORD_BUFFER];
+    char bufferOutputDirs[MAX_FILE_NUMBER][WORD_BUFFER];
 
     // SAVE all file names in array
-    char *inputFiles[1024];
+    char *inputFiles[MAX_FILE_NUMBER];
     int e = 0;
     for (int d = 3; d < argc - 1; d++)
     {
@@ -67,7 +68,6 @@ int main(int argc, int **argv)
 
         // Make a complete dir for the argv[i]
         sprintf(currentInputFileDir, "%s%s", ROOT_DIR, fileDir);
-        //printf("Current input file: %s\n", currentInputFileDir);
         // create directories for buffer output files
         sprintf(bufferOutputDir, "%s%s%s", ROOT_DIR, BUFFER_DIR, inputFiles[global_fileCounter]);
 

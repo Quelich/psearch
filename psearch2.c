@@ -10,13 +10,14 @@
 #include <unistd.h>
 
 //#define BUFFER_SIZE 209715200 // 200 MB
-#define ROOT_DIR            "./"
-#define BUFFER_DIR          "buffer_"
-#define PIPE_BUFFER         2063
-#define OUTPUT_BUFFER_SIZE  10240
-#define WORD_BUFFER         1024
-#define LINE_BUFFER         1024
-#define MAX_MATCHED_LINES   1024
+#define ROOT_DIR "./"
+#define BUFFER_DIR "buffer_"
+#define PIPE_BUFFER 2063
+#define OUTPUT_BUFFER_SIZE 10240
+#define WORD_BUFFER 1024
+#define LINE_BUFFER 1024
+#define MAX_MATCHED_LINES 1024
+#define MAX_FILE_NUMBER 20
 
 int main(int argc, int **argv)
 {
@@ -31,10 +32,10 @@ int main(int argc, int **argv)
     char *searchKeyword = argv[1];         /* DO NOT CHANGE: reserved for the keyword*/
     int filesCount = atoi(argv[2]);        /* DO NOT CHANGE: reserved for the files count*/
     char *outputFileName = argv[argc - 1]; /* DO NOT CHANGE: reserved for the output file*/
-    char *bufferOutputDirs[WORD_BUFFER];
+    char bufferOutputDirs[MAX_FILE_NUMBER][WORD_BUFFER];
 
     // SAVE all file names in array
-    char *inputFiles[100];
+    char *inputFiles[MAX_FILE_NUMBER];
     int e = 0;
     for (int d = 3; d < argc - 1; d++)
     {
@@ -49,6 +50,16 @@ int main(int argc, int **argv)
     int pfds[filesCount][2];
 
     int global_fileCounter = 0;
+
+    // ADD buffer files to a list
+    for (int i = 0; i < filesCount; i++)
+    {
+        char bufferOutputDir[WORD_BUFFER];
+        sprintf(bufferOutputDir, "%s%s%s", ROOT_DIR, BUFFER_DIR, inputFiles[i]);
+        strcpy(bufferOutputDirs[i], bufferOutputDir);
+        // printf("ADDED: %s into output list\n", bufferOutputDirs[global_fileCounter]); /* DEBUG */
+    }
+
     for (int c = 0; c < filesCount; c++)
     {
         if (pipe(pfds[c]) < 0)
@@ -65,20 +76,19 @@ int main(int argc, int **argv)
 
         // Make a complete dir for the argv[i]
 
-        //TODO: change with sprintf
-        strcat(currentInputFileDir, ROOT_DIR);
-        strcat(currentInputFileDir, fileDir);
-
+        // TODO: change with sprintf
+        // strcat(currentInputFileDir, ROOT_DIR);
+        // strcat(currentInputFileDir, fileDir);
+        sprintf(currentInputFileDir, "%s%s", ROOT_DIR, fileDir);
         // printf("Global counter: %d\n", global_fileCounter);
 
         // create directories for buffer output files
-        //TODO: change with sprintf
-        strcat(bufferOutputDir, ROOT_DIR);                       /* ./ */
-        strcat(bufferOutputDir, BUFFER_DIR);                     /* ./buffer_ */
-        strcat(bufferOutputDir, inputFiles[global_fileCounter]); /* ./buffer_input1.txt*/
-
+        // TODO: change with sprintf
+        // strcat(bufferOutputDir, ROOT_DIR);                       /* ./ */
+        // strcat(bufferOutputDir, BUFFER_DIR);                     /* ./buffer_ */
+        // strcat(bufferOutputDir, inputFiles[global_fileCounter]); /* ./buffer_input1.txt*/
+        sprintf(bufferOutputDir, "%s%s%s", ROOT_DIR, BUFFER_DIR, inputFiles[global_fileCounter]);
         /* Store output dir in an array for convenience */
-        bufferOutputDirs[global_fileCounter] = bufferOutputDir;
 
         if (pids[c] < 0)
         {
@@ -89,8 +99,6 @@ int main(int argc, int **argv)
         {
 
             FILE *inputFileStream; /* single stream for a file */
-
-            // printf("CURRENT INPUT FILE: %s\n", currentInputFileDir);
 
             if (currentInputFileDir == NULL)
             {
@@ -149,12 +157,12 @@ int main(int argc, int **argv)
             }
 
             char matchedLines[MAX_MATCHED_LINES][WORD_BUFFER];
-            char line[LINE_BUFFER];
+            char line[LINE_BUFFER] = {0x0};
 
             // Reset input stream
             rewind(inputFileStream);
 
-            // GET lines by the matched lines indices  
+            // GET lines by the matched lines indices
             int j = 1;
             while ((fgets(line, LINE_BUFFER, inputFileStream)) != NULL)
             {
@@ -167,11 +175,11 @@ int main(int argc, int **argv)
             int l = 0;
             char msg[PIPE_BUFFER];
 
-            //printf("Message sent to PIPE:\n");
+            // printf("Message sent to PIPE:\n");
             for (int k = 0; k < MAX_MATCHED_LINES; k++)
             {
                 if (k == matchedLinesIndices[l])
-                {   
+                {
                     strcat(msg, currentInputFileDir);
                     strcat(msg, ", ");
                     char str_k[2];
@@ -181,9 +189,9 @@ int main(int argc, int **argv)
                     strcat(msg, matchedLines[k]);
                     strcat(msg, "\n");
                     /* COMPOSE PIPE MESSAGE TO BE SENT */
-                    //sprintf(msg, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
-                    //printf("%s\n", msg);
-                    // fprintf(bufferOutputFileStream, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
+                    // sprintf(msg, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
+                    // printf("%s\n", msg);
+                    //  fprintf(bufferOutputFileStream, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
                     l++;
                 }
             }
@@ -212,11 +220,11 @@ int main(int argc, int **argv)
     }
 
     // READ PIPES
-    char total_msg[PIPE_BUFFER];
+    char total_msg[PIPE_BUFFER] = {0x0};
     for (int i = 0; i < filesCount; i++)
     {
         close(pfds[i][1]); /* CLOSE WRITING TO PIPE */
-        char msg[WORD_BUFFER];
+        char msg[WORD_BUFFER] = {0x0};
         if (read(pfds[i][0], msg, sizeof(msg)) == -1)
         {
             perror("Error reading pipe message!\n");
@@ -227,13 +235,13 @@ int main(int argc, int **argv)
         strcat(total_msg, "\n");
         close(pfds[i][0]); /* CLOSE READING PIPE */
     }
-     
-    //printf("Received message from PIPE:\n%s\n", total_msg);
+
+    // printf("Received message from PIPE:\n%s\n", total_msg);
 
     // /* WRITE TO THE OUTPUT FILE */
     FILE *outputFileStream;
 
-    char * outputDir = malloc(WORD_BUFFER);
+    char outputDir[WORD_BUFFER] = {0x0};
 
     strcat(outputDir, ROOT_DIR);
     strcat(outputDir, outputFileName);
@@ -244,7 +252,10 @@ int main(int argc, int **argv)
         exit(-1);
     }
 
-    fprintf(outputFileStream, "%s",total_msg);
+    fprintf(outputFileStream, "%s", total_msg);
     fclose(outputFileStream);
+
+    /* REMOVE BUFFER OUTPUTS */
+   
     return 0;
 }

@@ -1,0 +1,18 @@
+./buffer_input3.txt./input1.txt, 2: name aosjdpoa jos paosd aosjdpoa
+
+./input1.txt, 3: apsjd oasdpja os aoj p name asda
+
+
+./buffer_input3.txt./input2.txt, 1: name asda
+
+./input2.txt, 4: asodfğpsğ asp ğadsaojsapd name asdjoasj
+
+./input2.txt, 6: name asodkas named asojdpao sjoaağ oaksd
+
+./input2.txt, 7: alskn name asokd aosk asd
+
+./buffer_input3.txt./input3.txt, 3: cccc cccc
+
+./input3.txt, 11: name cccc
+
+
