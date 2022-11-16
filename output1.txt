@@ -1,0 +1,21 @@
+./input1.txt, 2: name aosjdpoa jos paosd aosjdpoa
+
+./input1.txt, 4: namename apsod name
+./input2.txt, 1: name asda
+
+./input2.txt, 4: asodfğpsğ asp ğadsaojsapd name asdjoasj
+
+./input2.txt, 6: name asodkas named asojdpao sjoaağ oaksd
+
+./input2.txt, 7: alskn name asokd aosk asd
+./input3.txt, 3: cccc cccc
+
+./input3.txt, 11: name cccc
+
+./input4.txt, 5: askd apa aos aos name 
+
+./input4.txt, 12: name aposodjo as ğkas dddd
+
+./input4.txt, 13: aoskd aos ğd a name apsdkğp aksd
+
+./input4.txt, 15: name
