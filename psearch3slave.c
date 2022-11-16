@@ -133,7 +133,7 @@ int main(int argc, int **argv)
         perror("[MASTER]Error opening file descriptor!\n");
         exit(-1);
     }
-    sleep(1);
+    //sleep(1);
     struct stat fstatus;
     fstat(fd, &fstatus);
     off_t fstatus_s = fstatus.st_size;
