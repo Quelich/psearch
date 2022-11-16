@@ -128,7 +128,7 @@ int main(int argc, int **argv)
         if (k == matchedLinesIndices[l])
         {
             char line[LINE_BUFFER] = {0x0};
-            sprintf(line, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
+            sprintf(line, "%s, %d: %s\n", inputFile, k, matchedLines[k]);
             strcat(msg, line);
             l++;
         }
@@ -171,19 +171,22 @@ int main(int argc, int **argv)
     if (cons == SEM_FAILED)
     {
         perror("[SLAVE]\nsemaphore/consumer");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
 
     /* WRITE TO SHARED MEMORY WITH SYNCHRONIZATION */
     sem_wait(cons);
-    strcpy(memblock, msg);
-    printf("[SLAVE]\n Writing \n%s\n", memblock);
+    sleep(1); /* WARNING: IF YOU DO NOT WAIT CONSUMER, THE OUTPUT WILL BE INCOMPLETE*/
+    strcat(memblock, msg);
+    // printf("[SLAVE]\n Writing \n%s\n", memblock);
     sem_post(prod);
 
     /* DEATTACH MEMORY */
-    shmdt(memblock);
+    // shmdt(memblock);
     shmctl(shm_id, IPC_RMID, 0);
-    // sem_close(prod);
-    // sem_close(cons);
+    sem_close(prod);
+    sem_close(cons);
+    sem_unlink(SEM_PROD_FNAME);
+    sem_unlink(SEM_CONS_FNAME);
     return 0;
 }

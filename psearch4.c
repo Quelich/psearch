@@ -18,7 +18,7 @@
 #include <sys/ipc.h>
 #include <errno.h>
 
-#define MAX_INPUT_COUNT 100
+#define MAX_INPUT_COUNT 50
 #define SEM_PROD_FNAME "producer"
 #define SEM_CONS_FNAME "consumer"
 #define SH_FNAME "/dev/null"
@@ -26,8 +26,6 @@
 #define MSG_BUFFER 1024
 #define TOTAL_MSG_BUFFER 10240
 #define SPH_BUFFER 512
-
-const char total_msg[TOTAL_MSG_BUFFER];
 
 int main(int argc, int **argv)
 {
@@ -64,7 +62,7 @@ int main(int argc, int **argv)
         exit(EXIT_FAILURE);
     }
 
-    shm_id = shmget(shm_key, sizeof(int), 0644 | IPC_CREAT);
+    shm_id = shmget(shm_key, MSG_BUFFER, 0644 | IPC_CREAT);
 
     if (shm_id < 0)
     {
@@ -113,27 +111,30 @@ int main(int argc, int **argv)
         else if (pid == 0) /* CHILD PROCESS */
         {
             execlp("./psearch4slave", "psearch4slave", searchKeyword, inputFile, NULL);
-            exit(EXIT_SUCCESS);
+            break;
         }
     }
 
-    
+    char total_msg[TOTAL_MSG_BUFFER];
+
     if (pid == 0) /* CHILD PROCESS */
     {
         while (true)
         {
             sem_wait(prod);
-
             if (strlen(memblock) > 0)
             {
+              
                 /* READING CHILD PROCESSES */
-                char child_msg[MSG_BUFFER];
+                char child_msg[MSG_BUFFER] = {0x0};
                 sprintf(child_msg, "%s\n", memblock);
                 strcat(total_msg, child_msg);
+                // printf("[MASTER]\nREADING:\n%s", child_msg);
+
                 memblock[0] = 0; /* RESET SHARED MEMORY */
+
                 break;
             }
-
             sem_post(cons);
         }
 
@@ -142,16 +143,30 @@ int main(int argc, int **argv)
 
     else if (pid > 0) /* PARENT PROCESS */
     {
+
         /* WAIT CHILD PROCESSES TO FINISH */
         while (pid = waitpid(-1, NULL, 0))
         {
+
             if (errno == ECHILD)
             {
                 break;
             }
         }
 
-        printf("[MASTER]\nTotal Message:\n%s\n", memblock);
+        printf("[MASTER]\nTotal Message:\n%s", memblock);
+
+        /* WRITE TO THE OUTPUT FILE */
+        FILE *outputStream;
+        if ((outputStream = fopen(outputFileName, "w")) == NULL)
+        {
+            perror("[MASTER] Error opening output file!\n");
+            exit(-1);
+        }
+
+        fprintf(outputStream, "%s", memblock);
+        fclose(outputStream);
+
         shmdt(memblock);
         shmctl(shm_id, IPC_RMID, 0);
         // sem_unlink(SEM_PROD_FNAME);
