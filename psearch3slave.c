@@ -13,6 +13,7 @@
 #define LINE_BUFFER 3072
 #define MAX_MATCHED_LINES 1024
 #define SMEM_BUFFER 4096
+#define SHD_FNAME "./shared_output.txt"
 
 int main(int argc, int **argv)
 {
@@ -117,29 +118,27 @@ int main(int argc, int **argv)
         if (k == matchedLinesIndices[l])
         {
             char line[LINE_BUFFER] = {0x0};
-            sprintf(line, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
+            sprintf(line, "%s, %d: %s\n", inputFile, k, matchedLines[k]);
             strcat(msg, line);
             // printf("%s\n", msg); 
             l++;
         }
     }
 
-    const char *shdfdir = "./shared_output.txt";
-
-    int fd = open(shdfdir, O_CREAT | O_RDWR, (mode_t)0777);
+    
+    int fd = open(SHD_FNAME, O_CREAT | O_RDWR, (mode_t)0777);
 
     if (fd < 0)
     {
         perror("[MASTER]Error opening file descriptor!\n");
         exit(-1);
     }
-
+    sleep(1);
     struct stat fstatus;
     fstat(fd, &fstatus);
     off_t fstatus_s = fstatus.st_size;
 
     fallocate(fd, 0, fstatus_s, strlen(msg));
-
 
     char *shdmem = (char *)mmap(0, fstatus_s + strlen(msg), PROT_READ | PROT_WRITE,
                                MAP_SHARED, fd, 0);
@@ -156,11 +155,9 @@ int main(int argc, int **argv)
        shdmem[fstatus_s + i] = msg[i];
     }
 
-    
-    // printf("SHARED MEMORY FROM CHILD:\n%s\n", addr);
-
     if (munmap(shdmem, strlen(shdmem)) == -1)
     {
+        close(fd);
         perror("[SLAVE] Error freeing shared memory!\n");
         exit(-1);
     }

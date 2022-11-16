@@ -1,22 +1,15 @@
-./input1.txt, 2: name aosjdpoa jos paosd aosjdpoa
-
-./input1.txt, 3: apsjd oasdpja os aoj p name asda
-
-./input2.txt, 1: name asda
-
-./input2.txt, 4: asodfğpsğ asp ğadsaojsapd name asdjoasj
-
-./input2.txt, 6: name asodkas named asojdpao sjoaağ oaksd
-
-./input2.txt, 7: alskn name asokd aosk asd
-./input3.txt, 3: cccc cccc
-
-./input3.txt, 11: name cccc
-
-./input4.txt, 5: askd apa aos aos name 
-
-./input4.txt, 12: name aposodjo as ğkas dddd
-
-./input4.txt, 13: aoskd aos ğd a name apsdkğp aksd
-
-./input4.txt, 15: name
+input1.txt, 5: At love natural!
+input1.txt, 6: All that love actual
+input1.txt, 14: And the time for love is here right now...
+input1.txt, 16: Oh I feel in love deep inside
+input1.txt, 17: Oh love natural
+input1.txt, 23: All love natural
+input1.txt, 39: And the time for love is here right now...
+input1.txt, 41: Oh I feel in love deep inside
+input1.txt, 42: All love natural
+input1.txt, 47: All love natural
+input1.txt, 52: Oh love natural
+input1.txt, 58: Gonna find out love today
+input1.txt, 59: Let love go on and on
+input1.txt, 65: Oh love natural
+input1.txt, 71: Oh love natural

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 
 //#define BUFFER_SIZE 209715200 // 200 MB
 #define ROOT_DIR "./"
@@ -17,7 +18,6 @@
 #define LINE_BUFFER 1024
 #define MAX_MATCHED_LINES 1024
 #define MAX_FILE_NUMBER 20
-
 
 int main(int argc, int **argv)
 {
@@ -98,93 +98,42 @@ int main(int argc, int **argv)
                 exit(-1);
             }
 
-            // Create matched lines indices array
-            int matchedLinesIndices[MAX_MATCHED_LINES];
-            for (int b = 0; b < MAX_MATCHED_LINES; b++)
-            {
-                matchedLinesIndices[b] = 0;
-            }
-
-            int matchedLinesCount = 0;
-            int myChar;
-            int lineCount = 0;
-            char word[WORD_BUFFER];
-            int wordChCount = 0;
-
-            // Read file by character to find matched line indices
-            while (((myChar = fgetc(inputFileStream)) != EOF))
-            {
-                if (myChar == '\n')
-                {
-                    lineCount++;
-                }
-
-                // Before beginning a new word
-                if (myChar == ' ' || myChar == '\n' || myChar == '\0' || myChar == '\t')
-                {
-                    // Is it the keyword?
-                    if (strcmp(word, searchKeyword) == 0)
-                    {
-                        matchedLinesIndices[matchedLinesCount] = lineCount + 1;
-                        matchedLinesCount++;
-                    }
-
-                    // Reset word
-                    word[0] = '\0';
-                    wordChCount = 0;
-                }
-                else
-                {
-                    word[wordChCount++] = (char)myChar;
-                    word[wordChCount] = '\0';
-                }
-            }
-
-            char matchedLines[MAX_MATCHED_LINES][WORD_BUFFER];
-            char line[LINE_BUFFER] = {0x0};
-
-            // RESET input file stream
-            rewind(inputFileStream);
-
-            int j = 1;
-            while ((fgets(line, LINE_BUFFER, inputFileStream)) != NULL)
-            {
-                strcpy(matchedLines[j], line);
-                j++;
-            }
-
-            fclose(inputFileStream);
-
-            // Write to output file
+            int lcounter = 0;
+            char line[LINE_BUFFER];
             FILE *bufferOutputFileStream;
-
             if ((bufferOutputFileStream = fopen(bufferOutputDir, "w")) == NULL)
             {
                 perror("Error opening output file!\n");
                 return 0;
             }
 
-            int l = 0;
-            for (int k = 0; k < MAX_MATCHED_LINES; k++)
+            while (fgets(line, sizeof(line), inputFileStream) != NULL) // read throguh the file and store each line in lines_of_file
             {
-
-                // TODO: write to buffer file
-                if (k == matchedLinesIndices[l])
+                char *temp = line;
+                lcounter++; // increment counter in each line
+                if ((temp = strstr(line, searchKeyword)) != NULL)
                 {
-                    fprintf(bufferOutputFileStream, "%s, %d: %s\n", currentInputFileDir, k, matchedLines[k]);
-                    l++;
+                    char *whitespace = temp + strlen(searchKeyword);
+
+                    if (temp == line || isblank((unsigned char)*(temp - 1)))
+                    {
+                        /* if the exact keyword found in a line */
+                        if (*whitespace == '\0' || isblank((unsigned char)*whitespace))
+                        {
+                            fprintf(bufferOutputFileStream, "%s, %d: %s", fileDir, lcounter, line);
+                        }
+                    }
+                    temp = whitespace;
                 }
             }
 
             fclose(bufferOutputFileStream);
-
             exit(0);
         }
 
         else /* PARENT PROCESS */
         {
             global_fileCounter++;
-            // printf("Counter: %d\n", global_fileCounter);
             *currentInputFileDir = '\0';
         }
     }

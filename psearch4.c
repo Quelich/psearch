@@ -92,7 +92,7 @@ int main(int argc, int **argv)
         exit(EXIT_FAILURE);
     }
 
-    /* CREATE CHILD PROCESSES */
+    /* CREATE CHILD PROCESSES */ 
     for (i = 0; i < fork_count; i++)
     {
         char *inputFile = inputFiles[i];
@@ -129,10 +129,7 @@ int main(int argc, int **argv)
                 char child_msg[MSG_BUFFER] = {0x0};
                 sprintf(child_msg, "%s\n", memblock);
                 strcat(total_msg, child_msg);
-                // printf("[MASTER]\nREADING:\n%s", child_msg);
-
                 memblock[0] = 0; /* RESET SHARED MEMORY */
-
                 break;
             }
             sem_post(cons);
