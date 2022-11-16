@@ -30,7 +30,7 @@ int main(int argc, int **argv)
 {
     if (argc < 1)
     {
-        printf("[SLAVE] Number of input files must be greater than 1!\n");
+        perror("[SLAVE] Number of input files must be greater than 1!\n");
         return 0;
     }
 
@@ -128,7 +128,7 @@ int main(int argc, int **argv)
         if (k == matchedLinesIndices[l])
         {
             char line[LINE_BUFFER] = {0x0};
-            sprintf(line, "%s, %d: %s\n", inputFile, k, matchedLines[k]);
+            sprintf(line, "%s, %d: %s", inputFile, k, matchedLines[k]);
             strcat(msg, line);
             l++;
         }
@@ -176,7 +176,7 @@ int main(int argc, int **argv)
 
     /* WRITE TO SHARED MEMORY WITH SYNCHRONIZATION */
     sem_wait(cons);
-    sleep(1); /* WARNING: IF YOU DO NOT WAIT CONSUMER, THE OUTPUT WILL BE INCOMPLETE*/
+    //sleep(1); /* WARNING: IF YOU DO NOT WAIT CONSUMER, THE OUTPUT WILL BE INCOMPLETE*/
     strcat(memblock, msg);
     // printf("[SLAVE]\n Writing \n%s\n", memblock);
     sem_post(prod);

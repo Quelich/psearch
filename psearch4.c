@@ -127,7 +127,7 @@ int main(int argc, int **argv)
               
                 /* READING CHILD PROCESSES */
                 char child_msg[MSG_BUFFER] = {0x0};
-                sprintf(child_msg, "%s\n", memblock);
+                sprintf(child_msg, "%s", memblock);
                 strcat(total_msg, child_msg);
                 memblock[0] = 0; /* RESET SHARED MEMORY */
                 break;
