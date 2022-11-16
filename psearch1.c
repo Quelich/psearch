@@ -233,13 +233,13 @@ int main(int argc, int **argv)
     fclose(outputFileStream);
 
     /* REMOVE BUFFER OUTPUTS */
-    // for (int i = 0; i < filesCount; i++)
-    // {
-    //     if (remove(bufferOutputDirs[i]) != 0)
-    //     {
-    //         printf("Unable to remove %s\n", bufferOutputDirs[i]);
-    //     }
-    // }
+    for (int i = 0; i < filesCount; i++)
+    {
+        if (remove(bufferOutputDirs[i]) != 0)
+        {
+            printf("Unable to remove %s\n", bufferOutputDirs[i]);
+        }
+    }
 
     return 0;
 }

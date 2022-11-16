@@ -1,4 +1,0 @@
-./input3.txt, 3: cccc cccc
-
-./input3.txt, 11: name cccc
-

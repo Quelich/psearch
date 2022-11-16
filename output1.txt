@@ -1,6 +1,7 @@
 ./input1.txt, 2: name aosjdpoa jos paosd aosjdpoa
 
-./input1.txt, 4: namename apsod name
+./input1.txt, 3: apsjd oasdpja os aoj p name asda
+
 ./input2.txt, 1: name asda
 
 ./input2.txt, 4: asodfğpsğ asp ğadsaojsapd name asdjoasj
