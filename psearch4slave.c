@@ -123,6 +123,35 @@ int main(int argc, int **argv)
         CREATE THE MESSAGE with format:
         <input_file>, <matched_line_index>: <matched_line>
     */
+    
+    
+    int fd = shm_open(FD_FNAME, O_CREAT | O_RDWR, 0666);
+    if (ftruncate(fd, SHM_BUFFER) == -1)
+    {
+        perror("error ftruncate");
+        exit(EXIT_FAILURE);
+    }
+    char *memblock = (char *)mmap(0, SHM_BUFFER, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+    char * copy_memblock = memblock;
+    // char *memblock = shmat(shm_id, NULL, 0);
+
+    sem_t *prod = sem_open(SEM_PROD_FNAME, O_CREAT | O_EXCL, 0644, 0);
+
+    if (prod == SEM_FAILED)
+    {
+        perror("[SLAVE]\nsemaphore/producer");
+        exit(EXIT_FAILURE);
+    }
+
+    sem_t *cons = sem_open(SEM_CONS_FNAME, O_CREAT | O_EXCL, 0644, 1);
+
+    if (cons == SEM_FAILED)
+    {
+        perror("[SLAVE]\nsemaphore/consumer");
+        exit(EXIT_FAILURE);
+    }
+
     int l = 0;
     char msg[SHM_BUFFER] = {0x0}; /* MESSAGE TO SEND PARENT PROCESS */
 
@@ -159,35 +188,14 @@ int main(int argc, int **argv)
     //     exit(-1);
     // }
 
-    int fd = shm_open(FD_FNAME, O_CREAT | O_RDWR, 0666);
-    if (ftruncate(fd, SHM_BUFFER) == -1)
-    {
-        perror("ftruncate");
-    }
-    char *memblock = (char *)mmap(0, SHM_BUFFER, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-    // char *memblock = shmat(shm_id, NULL, 0);
-
-    sem_t *prod = sem_open(SEM_PROD_FNAME, O_CREAT | O_EXCL, 0644, 0);
-
-    if (prod == SEM_FAILED)
-    {
-        perror("[SLAVE]\nsemaphore/producer");
-        exit(EXIT_FAILURE);
-    }
-
-    sem_t *cons = sem_open(SEM_CONS_FNAME, O_CREAT | O_EXCL, 0644, 1);
-
-    if (cons == SEM_FAILED)
-    {
-        perror("[SLAVE]\nsemaphore/consumer");
-        // exit(EXIT_FAILURE);
-    }
-
     /* WRITE TO SHARED MEMORY WITH SYNCHRONIZATION */
     sem_wait(cons);
+
     // sleep(1); /* WARNING: IF YOU DO NOT WAIT CONSUMER, THE OUTPUT WILL BE INCOMPLETE*/
+   
     strcat(memblock, msg);
+    
+
     // printf("[SLAVE]\n Writing \n%s\n", memblock);
     sem_post(prod);
 
@@ -196,7 +204,9 @@ int main(int argc, int **argv)
     // shmctl(shm_id, IPC_RMID, 0);
     sem_close(prod);
     sem_close(cons);
+
     sem_unlink(SEM_PROD_FNAME);
     sem_unlink(SEM_CONS_FNAME);
+
     return 0;
 }

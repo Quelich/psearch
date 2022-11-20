@@ -1,15 +1,3 @@
-input2.txt, 5: I don't care, I love it
-input2.txt, 11: I don't care, I love it
-input2.txt, 17: I love it
-input2.txt, 18: I love it
-input2.txt, 23: I don't care, I love it
-input2.txt, 24: I don't care, I love it, I love it
-input2.txt, 5: I don't care, I love it
-input2.txt, 11: I don't care, I love it
-input2.txt, 17: I love it
-input2.txt, 18: I love it
-input2.txt, 23: I don't care, I love it
-input2.txt, 24: I don't care, I love it, I love it
 input3.txt, 1: My love and my touch
 input3.txt, 3: My love and my touch
 input3.txt, 5: My love and my touch
@@ -37,21 +25,13 @@ input1.txt, 58: Gonna find out love today
 input1.txt, 59: Let love go on and on
 input1.txt, 65: Oh love natural
 input1.txt, 71: Oh love natural
-input1.txt, 5: At love natural!
-input1.txt, 6: All that love actual
-input1.txt, 14: And the time for love is here right now...
-input1.txt, 16: Oh I feel in love deep inside
-input1.txt, 17: Oh love natural
-input1.txt, 23: All love natural
-input1.txt, 39: And the time for love is here right now...
-input1.txt, 41: Oh I feel in love deep inside
-input1.txt, 42: All love natural
-input1.txt, 47: All love natural
-input1.txt, 52: Oh love natural
-input1.txt, 58: Gonna find out love today
-input1.txt, 59: Let love go on and on
-input1.txt, 65: Oh love natural
-input1.txt, 71: Oh love natinput3.txt, 1: My love and my touch
+input2.txt, 5: I don't care, I love it
+input2.txt, 11: I don't care, I love it
+input2.txt, 17: I love it
+input2.txt, 18: I love it
+input2.txt, 23: I don't care, I love it
+input2.txt, 24: I don't care, I love it, I love it
+input3.txt, 1: My love and my touch
 input3.txt, 3: My love and my touch
 input3.txt, 5: My love and my touch
 input3.txt, 7: My love and my touch
@@ -63,3 +43,17 @@ input3.txt, 20: My love and my touch
 input3.txt, 22: My love and my touch
 input3.txt, 24: My love and my touch
 input3.txt, 26: My love and my touch
+input1.txt, 5: At love natural!
+input1.txt, 6: All that love actual
+input1.txt, 14: And the time for love is here right now...
+input1.txt, 16: Oh I feel in love deep inside
+input1.txt, 17: Oh love natural
+input1.txt, 23: All love natural
+input1.txt, 39: And the time for love is here right now...
+input1.txt, 41: Oh I feel in love deep inside
+input1.txt, 42: All input2.txt, 5: I don't care, I love it
+input2.txt, 11: I don't care, I love it
+input2.txt, 17: I love it
+input2.txt, 18: I love it
+input2.txt, 23: I don't care, I love it
+input2.txt, 24: I don't care, I love it, I love it

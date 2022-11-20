@@ -28,6 +28,8 @@
 #define TOTAL_MSG_BUFFER 10240
 #define SPH_BUFFER 512
 
+char total_msg[TOTAL_MSG_BUFFER];
+
 int main(int argc, int **argv)
 {
 
@@ -121,39 +123,42 @@ int main(int argc, int **argv)
         else if (pid == 0) /* CHILD PROCESS */
         {
             execlp("./psearch4slave", "psearch4slave", searchKeyword, inputFile, NULL);
-            break;
+            exit(EXIT_SUCCESS);
         }
         wait(NULL);
     }
 
-    char total_msg[TOTAL_MSG_BUFFER];
-
-    if (pid == 0) /* CHILD PROCESS */
+    if (pid == 0) /* CHILD */
     {
         while (true)
         {
             sem_wait(prod);
             if (strlen(memblock) > 0)
             {
-
-                /* READING CHILD PROCESSES */
-                char child_msg[MSG_BUFFER] = {0x0};
-                sprintf(child_msg, "%s", memblock);
-                strcat(total_msg, child_msg);
-                memblock[0] = 0; /* RESET SHARED MEMORY */
+                printf("[MASTER]\nReading:\n%s", memblock);
+                strcat(total_msg, memblock);
+                memblock[0] = 0;
                 break;
             }
+
             sem_post(cons);
         }
-
+        shmdt(memblock);
         exit(EXIT_SUCCESS);
     }
 
     else if (pid > 0) /* PARENT PROCESS */
     {
 
-
-        printf("[MASTER]\nTotal Message:\n%s", memblock);
+        while (pid = waitpid(-1, NULL, 0))
+        {
+           
+            
+            if (errno == ECHILD)
+            {
+                break;
+            }
+        }
 
         /* WRITE TO THE OUTPUT FILE */
         FILE *outputStream;
@@ -162,14 +167,14 @@ int main(int argc, int **argv)
             perror("[MASTER] Error opening output file!\n");
             exit(-1);
         }
-
+        printf("[MASTER]\nTotal Message:\n%s\n", memblock);
         fprintf(outputStream, "%s", memblock);
         fclose(outputStream);
 
         shmdt(memblock);
         // shmctl(shm_id, IPC_RMID, 0);
-        // sem_unlink(SEM_PROD_FNAME);
-        // sem_unlink(SEM_CONS_FNAME);
+        sem_unlink(SEM_PROD_FNAME);
+        sem_unlink(SEM_CONS_FNAME);
         sem_close(prod);
         sem_close(cons);
         exit(EXIT_SUCCESS);
