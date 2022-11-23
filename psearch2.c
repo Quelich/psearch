@@ -1,23 +1,15 @@
-/* FIX THIS
-
-- input1-3.txt keyword is in the 2th line but it prints as 3rd
-
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-//#define BUFFER_SIZE 209715200 // 200 MB
 #define ROOT_DIR "./"
-#define BUFFER_DIR "buffer_"
-#define PIPE_BUFFER 2063
+#define PIPE_BUFFER 4096
 #define OUTPUT_BUFFER_SIZE 10240
 #define WORD_BUFFER 1024
-#define LINE_BUFFER 1024
-#define MAX_MATCHED_LINES 1024
-#define MAX_FILE_NUMBER 20
+#define LINE_BUFFER 4096
+#define MAX_MATCHED_LINES 10240
+#define MAX_FILE_NUMBER 10
 
 int main(int argc, int **argv)
 {
@@ -89,7 +81,7 @@ int main(int argc, int **argv)
             }
 
             // Create matched lines indices array
-            int matchedLinesIndices[MAX_MATCHED_LINES];
+            int matchedLinesIndices[MAX_MATCHED_LINES] = {0x0};
             for (int b = 0; b < MAX_MATCHED_LINES; b++)
             {
                 matchedLinesIndices[b] = 0;
@@ -98,7 +90,7 @@ int main(int argc, int **argv)
             int matchedLinesCount = 0;
             int myChar;
             int lineCount = 0;
-            char word[WORD_BUFFER];
+            char word[WORD_BUFFER] = {0x0};
             int wordChCount = 0;
 
             // Read file by character to find matched line indices

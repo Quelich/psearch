@@ -1,0 +1,13 @@
+input1.txt, 5: At love natural!
+input1.txt, 6: All that love actual
+input1.txt, 14: And the time for love is here right now...
+input1.txt, 16: Oh I feel in love deep inside
+input1.txt, 17: Oh love natural
+input1.txt, 25: At love natural!
+input1.txt, 26: All that love actual
+input1.txt, 34: And the time for love is here right now...
+input1.txt, 36: Oh I feel in love deep inside
+input1.txt, 37: Oh love natural
+input1.txt, 45: At love natural!
+input1.txt, 46: All that love actual
+input1.txt, 54: And the time f

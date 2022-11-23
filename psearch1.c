@@ -3,19 +3,20 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
-
+#include <time.h>
 
 #define ROOT_DIR "./"
 #define BUFFER_DIR "buffer_"
-#define OUTPUT_BUFFER_SIZE 10240 /* 10 mb */
-#define WORD_BUFFER 1024
-#define LINE_BUFFER 1024
-#define MAX_MATCHED_LINES 1024
-#define MAX_FILE_NUMBER 20
+#define OUTPUT_BUFFER_SIZE 51200
+#define WORD_BUFFER 25600
+#define LINE_BUFFER 25600
+#define MAX_MATCHED_LINES 51200
+#define MAX_FILE_NUMBER 10
 
 int main(int argc, int **argv)
 {
 
+    
     if (argc < 1)
     {
         printf("Number of input files must be greater than 1!\n");
@@ -139,7 +140,7 @@ int main(int argc, int **argv)
     }
 
     /* READ BUFFER OUTPUTS */
-    char *outputBuffer = malloc(OUTPUT_BUFFER_SIZE);
+    char outputBuffer[OUTPUT_BUFFER_SIZE] = {0x0};
     int outputCharCount = 0;
     int outputChar;
 
