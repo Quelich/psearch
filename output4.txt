@@ -49,108 +49,6 @@ input1.txt, 239: And the time for love is here right now...
 input1.txt, 241: Oh I feel in love deep inside
 input1.txt, 242: Oh love natural
 input1.txt, 248: All love natural
-input1.txt, 264: Aninput1.txt, 5: At love natural!
-input1.txt, 6: All that love actual
-input1.txt, 14: And the time for love is here right now...
-input1.txt, 16: Oh I feel in love deep inside
-input1.txt, 17: Oh love natural
-input1.txt, 23: All love natural
-input1.txt, 39: And the time for love is here right now...
-input1.txt, 41: Oh I feel in love deep inside
-input1.txt, 42: All love natural
-input1.txt, 47: All love natural
-input1.txt, 52: Oh love natural
-input1.txt, 58: Gonna find out love today
-input1.txt, 59: Let love go on and on
-input1.txt, 65: Oh love natural
-input1.txt, 71: Oh love natural
-input1.txt, 80: At love natural!
-input1.txt, 81: All that love actual
-input1.txt, 89: And the time for love is here right now...
-input1.txt, 91: Oh I feel in love deep inside
-input1.txt, 92: Oh love natural
-input1.txt, 98: All love natural
-input1.txt, 114: And the time for love is here right now...
-input1.txt, 116: Oh I feel in love deep inside
-input1.txt, 117: All love natural
-input1.txt, 122: All love natural
-input1.txt, 127: Oh love natural
-input1.txt, 133: Gonna find out love today
-input1.txt, 134: Let love go on and on
-input1.txt, 140: Oh love natural
-input1.txt, 146: Oh love natural
-input1.txt, 155: At love natural!
-input1.txt, 156: All that love actual
-input1.txt, 164: And the time for love is here right now...
-input1.txt, 166: Oh I feel in love deep inside
-input1.txt, 167: Oh love natural
-input1.txt, 173: All love natural
-input1.txt, 189: And the time for love is here right now...
-input1.txt, 191: Oh I feel in love deep inside
-input1.txt, 192: All love natural
-input1.txt, 197: All love natural
-input1.txt, 202: Oh love natural
-input1.txt, 208: Gonna find out love today
-input1.txt, 209: Let love go on and on
-input1.txt, 215: Oh love natural
-input1.txt, 221: Oh love natural
-input1.txt, 230: At love natural!
-input1.txt, 231: All that love actual
-input1.txt, 239: And the time for love is here right now...
-input1.txt, 241: Oh I feel in love deep inside
-input1.txt, 242: Oh love natural
-input1.txt, 248: All love natural
-inpinput1.txt, 5: At love natural!
-input1.txt, 6: All that love actual
-input1.txt, 14: And the time for love is here right now...
-input1.txt, 16: Oh I feel in love deep inside
-input1.txt, 17: Oh love natural
-input1.txt, 23: All love natural
-input1.txt, 39: And the time for love is here right now...
-input1.txt, 41: Oh I feel in love deep inside
-input1.txt, 42: All love natural
-input1.txt, 47: All love natural
-input1.txt, 52: Oh love natural
-input1.txt, 58: Gonna find out love today
-input1.txt, 59: Let love go on and on
-input1.txt, 65: Oh love natural
-input1.txt, 71: Oh love natural
-input1.txt, 80: At love natural!
-input1.txt, 81: All that love actual
-input1.txt, 89: And the time for love is here right now...
-input1.txt, 91: Oh I feel in love deep inside
-input1.txt, 92: Oh love natural
-input1.txt, 98: All love natural
-input1.txt, 114: And the time for love is here right now...
-input1.txt, 116: Oh I feel in love deep inside
-input1.txt, 117: All love natural
-input1.txt, 122: All love natural
-input1.txt, 127: Oh love natural
-input1.txt, 133: Gonna find out love today
-input1.txt, 134: Let love go on and on
-input1.txt, 140: Oh love natural
-input1.txt, 146: Oh love natural
-input1.txt, 155: At love natural!
-input1.txt, 156: All that love actual
-input1.txt, 164: And the time for love is here right now...
-input1.txt, 166: Oh I feel in love deep inside
-input1.txt, 167: Oh love natural
-input1.txt, 173: All love natural
-input1.txt, 189: And the time for love is here right now...
-input1.txt, 191: Oh I feel in love deep inside
-input1.txt, 192: All love natural
-input1.txt, 197: All love natural
-input1.txt, 202: Oh love natural
-input1.txt, 208: Gonna find out love today
-input1.txt, 209: Let love go on and on
-input1.txt, 215: Oh love natural
-input1.txt, 221: Oh love natural
-input1.txt, 230: At love natural!
-input1.txt, 231: All that love actual
-input1.txt, 239: And the time for love is here right now...
-input1.txt, 241: Oh I feel in love deep inside
-input1.txt, 242: Oh love natural
-input1.txt, 248: All love natural
 input1.txt, 264: And the time for love is here right now...
 input1.txt, 266: Oh I feel in love deep inside
 input1.txt, 267: All love natural
@@ -160,113 +58,27 @@ input1.txt, 283: Gonna find out love today
 input1.txt, 284: Let love go on and on
 input1.txt, 290: Oh love natural
 input1.txt, 296: Oh love natural
-input1.txt, 308: And the time for love is here right now...
-input1.txt, 310: Oh I feel in love deep inside
-input1.txt, 311: All love natural
-input1.txt, 316: All love natural
+input1.txt, 302: Oh love natural
+input1.txt, 308: Gonna find out love today
+input1.txt, 309: Let love go on and on
+input1.txt, 315: Oh love natural
 input1.txt, 321: Oh love natural
-input1.txt, 327: Gonna find out love today
-input1.txt, 328: Let love go on and on
-input1.txt, 334: Oh love natural
+input1.txt, 327: Oh love natural
+input1.txt, 333: Gonna find out love today
+input1.txt, 334: Let love go on and on
 input1.txt, 340: Oh love natural
-input1.txt, 352: And the time for love is here right now...
-input1.txt, 354: Oh I feel in love deep inside
-input1.txt, 355: All love natural
-input1.txt, 360: All love natural
+input1.txt, 346: Oh love natural
+input1.txt, 352: Oh love natural
+input1.txt, 358: Gonna find out love today
+input1.txt, 359: Let love go on and on
 input1.txt, 365: Oh love natural
-input1.txt, 371: Gonna find out love today
-input1.txt, 372: Let love go on and on
-input1.txt, 378: Oh love natural
-input1.txt, 384: Oh love natural
-input1.txt, 396: And the time for love is here right now...
-input1.txt, 398: Oh I feel in love deep inside
-input1.txt, 399: All love natural
-input1.txt, 404: All love natural
-input1.txt, 409: Oh love natural
-input1.txt, 415: Gonna find out love today
-input1.txt, 416: Let love go on and on
-input1.txt, 425: At love natural!
-input1.txt, 426: All that love actual
-input1.txt, 434: And the time for love is here right now...
-input1.txt, 436: Oh I feel in love deep inside
-input1.txt, 437: Oh love natural
-input1.txt, 443: All love natural
-input1.txt, 459: And the time for love is here right now...
-input1.txt, 461: Oh I feel in love deep inside
-input1.txt, 462: All love natural
-input1.txt, 467: All love natural
-input1.txt, 472: Oh love natural
-input1.txt, 478: Gonna find out love today
-input1.txt, 479: Let love go on and on
-input1.txt, 485: Oh love natural
-input1.txt, 491: Oh love natural
-input1.txt, 500: At love natural!
-input1.txt, 501: All that love actual
-input1.txt, 509: And the time for love is here right now...
-input1.txt, 511: Oh I feel in love deep inside
-input1.txt, 512: Oh love natural
-input1.txt, 518: All love natural
-input1.txt, 534: And the time for love is here right now...
-input1.txt, 536: Oh I feel in love deep inside
-input1.txt, 537: All love natural
-input1.txt, 542: All love natural
-input1.txt, 547: Oh love natural
-input1.txt, 553: Gonna find out love today
-input1.txt, 554: Let love go on and on
-input1.txt, 560: Oh love natural
-input1.txt, 566: Oh love natural
-input1.txt, 575: At love natural!
-input1.txt, 576: All that love actual
-input1.txt, 584: And the time for love is here right now...
-input1.txt, 586: Oh I feel in love deep inside
-input1.txt, 587: Oh love natural
-input1.txt, 593: All love natural
-input1.txt, 609: And the time for love is here right now...
-input1.txt, 611: Oh I feel in love deep inside
-input1.txt, 612: All love natural
-input1.txt, 617: All love natural
-input1.txt, 622: Oh love natural
-input1.txt, 628: Gonna find out love today
-input1.txt, 629: Let love go on and on
-input1.txt, 635: Oh love natural
-input1.txt, 641: Oh love natural
-input1.txt, 650: At love natural!
-input1.txt, 651: All that love actual
-input1.txt, 659: And the time for love is here right now...
-input1.txt, 661: Oh I feel in love deep inside
-input1.txt, 662: Oh love natural
-input1.txt, 668: All love natural
-input1.txt, 684: And the time for love is here right now...
-input1.txt, 686: Oh I feel in love deep inside
-input1.txt, 687: All love natural
-input1.txt, 692: All love natural
-input1.txt, 697: Oh love natural
-input1.txt, 703: Gonna find out love today
-input1.txt, 704: Let love go on and on
-input1.txt, 710: Oh love natural
-input1.txt, 716: Oh love natural
-input1.txt, 728: And the time for love is here right now...
-input1.txt, 730: Oh I feel in love deep inside
-input1.txt, 731: All love natural
-input1.txt, 736: All love natural
-input1.txt, 741: Oh love natural
-input1.txt, 747: Gonna find out love today
-input1.txt, 748: Let love go on and on
-input1.txt, 754: Oh love natural
-input1.txt, 760: Oh love natural
-input1.txt, 772: And the time for love is here right now...
-input1.txt, 774: Oh I feel in love deep inside
-input1.txt, 775: All love natural
-input1.txt, 780: All love natural
-input1.txt, 785: Oh love natural
-input1.txt, 791: Gonna find out love today
-input1.txt, 792: Let love go on and on
-input1.txt, 798: Oh love natural
-input1.txt, 804: Oh love natural
-input1.txt, 816: And the time for love is here right now...
-input1.txt, 818: Oh I feel in love deep inside
-input1.txt, 819: All love natural
-input1.txt, 824: All love natural
-input1.txt, 829: Oh love natural
-input1.txt, 835: Gonna find out love today
-input1.txt, 836: Let love go on and on
+input1.txt, 371: Oh love natural
+input1.txt, 377: Oh love natural
+input1.txt, 383: Gonna find out love today
+input1.txt, 384: Let love go on and on
+input1.txt, 390: Oh love natural
+input1.txt, 396: Oh love natural
+input1.txt, 402: Oh love natural
+input1.txt, 408: Gonna find out love today
+input1.txt, 409: Let love go on and on
+input1.txt, 415: Oh love natural

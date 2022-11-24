@@ -6,12 +6,13 @@
 #include <sys/wait.h>
 
 #define ROOT_DIR "./"
-#define PIPE_BUFFER 1024
+#define PIPE_BUFFER 5000
 #define OUTPUT_BUFFER_SIZE 10240
-#define WORD_BUFFER 100
-#define LINE_BUFFER 1000
-#define MAX_MATCHED_LINES 10240
+#define WORD_BUFFER 500
+#define LINE_BUFFER 2000
+#define MAX_MATCHED_LINES 2048
 #define MAX_FILE_NUMBER 10
+#define COMPOSE_MSG_LINE 5000
 
 int main(int argc, int **argv)
 {
@@ -153,7 +154,7 @@ int main(int argc, int **argv)
                 if (k == matchedLinesIndices[l])
                 {
 
-                    char line[1300] = {0x0};
+                    char line[COMPOSE_MSG_LINE] = {0x0};
                     sprintf(line, "%s, %d: %s", fileDir, k, matchedLines[k]);
                     strcat(msg, line);
                     l++;
@@ -184,11 +185,11 @@ int main(int argc, int **argv)
     }
 
     // READ PIPES
-    char total_msg[PIPE_BUFFER] = {0x0};
+    char total_msg[OUTPUT_BUFFER_SIZE] = {0x0};
     for (int i = 0; i < filesCount; i++)
     {
         close(pfds[i][1]); /* CLOSE WRITING TO PIPE */
-        char msg[WORD_BUFFER] = {0x0};
+        char msg[PIPE_BUFFER] = {0x0};
         if (read(pfds[i][0], msg, sizeof(msg)) == -1)
         {
             perror("Error reading pipe message!\n");
