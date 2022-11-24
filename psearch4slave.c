@@ -16,12 +16,13 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <errno.h>
+#include <time.h>
 
 #define ROOT_DIR "./"
-#define WORD_BUFFER 1024
-#define LINE_BUFFER 3072
-#define MAX_MATCHED_LINES 1024
-#define SHM_BUFFER 2048 /* 10 mb */
+#define WORD_BUFFER 100
+#define LINE_BUFFER 2048
+#define MAX_MATCHED_LINES 10240
+#define SHM_BUFFER 102400 /* 10 mb */
 #define SEM_PROD_FNAME "producer"
 #define SEM_CONS_FNAME "consumer"
 #define SH_FNAME "/dev/null"
@@ -29,6 +30,10 @@
 
 int main(int argc, int **argv)
 {
+
+    /* START TIME MEASUREMENT */
+    struct timespec begin, end;
+    clock_gettime(CLOCK_REALTIME, &begin);
 
     sem_unlink(SEM_PROD_FNAME);
     sem_unlink(SEM_CONS_FNAME);

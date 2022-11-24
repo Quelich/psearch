@@ -2,17 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
+#include <sys/wait.h>
 
 #define ROOT_DIR "./"
-#define PIPE_BUFFER 4096
+#define PIPE_BUFFER 1024
 #define OUTPUT_BUFFER_SIZE 10240
-#define WORD_BUFFER 1024
-#define LINE_BUFFER 4096
+#define WORD_BUFFER 100
+#define LINE_BUFFER 1000
 #define MAX_MATCHED_LINES 10240
 #define MAX_FILE_NUMBER 10
 
 int main(int argc, int **argv)
 {
+
+    /* START TIME MEASUREMENT */
+    struct timespec begin, end;
+    clock_gettime(CLOCK_REALTIME, &begin);
 
     if (argc < 1)
     {
@@ -145,7 +151,7 @@ int main(int argc, int **argv)
             for (int k = 0; k < MAX_MATCHED_LINES; k++)
             {
                 if (k == matchedLinesIndices[l])
-                {   
+                {
 
                     char line[1300] = {0x0};
                     sprintf(line, "%s, %d: %s", fileDir, k, matchedLines[k]);
@@ -159,7 +165,7 @@ int main(int argc, int **argv)
                 perror("Error writing pipe!\n");
                 exit(-1);
             }
-            
+
             close(pfds[c][1]); /* CLOSE WRITING TO PIPE */
             exit(0);
         }
@@ -190,7 +196,7 @@ int main(int argc, int **argv)
         }
 
         strcat(total_msg, msg); /* DO NOT CHANGE */
-      
+
         close(pfds[i][0]); /* CLOSE READING PIPE */
     }
 
@@ -198,7 +204,6 @@ int main(int argc, int **argv)
     FILE *outputFileStream;
 
     char outputDir[WORD_BUFFER] = {0x0};
-
 
     sprintf(outputDir, "%s%s", ROOT_DIR, outputFileName);
 
@@ -210,6 +215,15 @@ int main(int argc, int **argv)
 
     fprintf(outputFileStream, "%s", total_msg);
     fclose(outputFileStream);
+
+    /* STOP TIME MEASUREMENT */
+    clock_gettime(CLOCK_REALTIME, &end);
+    long seconds = end.tv_sec - begin.tv_sec;
+    long nanoseconds = end.tv_nsec - begin.tv_nsec;
+    double elapsed_time = seconds + nanoseconds * 1e-9;
+
+    printf("Time Measured in seconds: %f\n", elapsed_time);
+    printf("Time Measured in nanoseconds: %ld\n", nanoseconds);
 
     return 0;
 }

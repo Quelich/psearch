@@ -1,7 +1,6 @@
 /*
     READ FROM SEMAPHORE
 */
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -17,21 +16,25 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <errno.h>
+#include <time.h>
 
-#define MAX_INPUT_COUNT 50
+#define MAX_INPUT_COUNT 10
 #define SEM_PROD_FNAME "producer"
 #define SEM_CONS_FNAME "consumer"
 #define FD_FNAME "semaphore"
 #define SH_FNAME "/dev/null"
-#define SHM_BUFFER 2048 /* 10 MB */
-#define MSG_BUFFER 1024
-#define TOTAL_MSG_BUFFER 10240
-#define SPH_BUFFER 512
+#define SHM_BUFFER 102400 /* 10 MB */
+#define MSG_BUFFER 4096
+#define TOTAL_MSG_BUFFER 1024000
+#define SPH_BUFFER 4096
 
 char total_msg[TOTAL_MSG_BUFFER];
 
 int main(int argc, int **argv)
 {
+    /* START TIME MEASUREMENT */
+    struct timespec begin, end;
+    clock_gettime(CLOCK_REALTIME, &begin);
 
     if (argc < 1)
     {
@@ -83,7 +86,7 @@ int main(int argc, int **argv)
         perror("ftruncate");
     }
 
-    char *memblock = (char *)mmap(0, SHM_BUFFER, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    char *memblock = (char *)mmap(0, SHM_BUFFER, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_PRIVATE, fd, 0);
 
     sem_unlink(SEM_PROD_FNAME);
     sem_unlink(SEM_CONS_FNAME);
@@ -152,8 +155,7 @@ int main(int argc, int **argv)
 
         while (pid = waitpid(-1, NULL, 0))
         {
-           
-            
+
             if (errno == ECHILD)
             {
                 break;
@@ -167,7 +169,7 @@ int main(int argc, int **argv)
             perror("[MASTER] Error opening output file!\n");
             exit(-1);
         }
-        printf("[MASTER]\nTotal Message:\n%s\n", memblock);
+        //printf("[MASTER]\nTotal Message:\n%s\n", memblock);
         fprintf(outputStream, "%s", memblock);
         fclose(outputStream);
 
@@ -177,8 +179,17 @@ int main(int argc, int **argv)
         sem_unlink(SEM_CONS_FNAME);
         sem_close(prod);
         sem_close(cons);
+
+        /* STOP TIME MEASUREMENT */
+        clock_gettime(CLOCK_REALTIME, &end);
+        long seconds = end.tv_sec - begin.tv_sec;
+        long nanoseconds = end.tv_nsec - begin.tv_nsec;
+        double elapsed_time = seconds + nanoseconds * 1e-9;
+
+        printf("Time Measured in seconds: %f\n", elapsed_time);
+        printf("Time Measured in nanoseconds: %ld\n", nanoseconds);
+
         exit(EXIT_SUCCESS);
     }
-
     return EXIT_SUCCESS;
 }

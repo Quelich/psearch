@@ -9,10 +9,10 @@
 #include <memory.h>
 
 #define ROOT_DIR "./"
-#define WORD_BUFFER 1024
-#define LINE_BUFFER 3072
-#define MAX_MATCHED_LINES 1024
-#define SMEM_BUFFER 4096
+#define WORD_BUFFER 100
+#define LINE_BUFFER 4096
+#define MAX_MATCHED_LINES 2048
+#define SMEM_BUFFER 10240
 #define SHD_FNAME "./shared_output.txt"
 
 int main(int argc, int **argv)

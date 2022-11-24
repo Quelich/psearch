@@ -4,19 +4,23 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <time.h>
+#include <sys/wait.h>
 
 #define ROOT_DIR "./"
 #define BUFFER_DIR "buffer_"
-#define OUTPUT_BUFFER_SIZE 51200
-#define WORD_BUFFER 25600
-#define LINE_BUFFER 25600
-#define MAX_MATCHED_LINES 51200
+#define OUTPUT_BUFFER_SIZE 10000
+#define WORD_BUFFER 100
+#define LINE_BUFFER 1024
+#define MAX_MATCHED_LINES 10000
 #define MAX_FILE_NUMBER 10
 
 int main(int argc, int **argv)
 {
+    /* START TIME MEASUREMENT */
+    struct timespec begin, end;
+    clock_gettime(CLOCK_REALTIME, &begin);
 
-    
+
     if (argc < 1)
     {
         printf("Number of input files must be greater than 1!\n");
@@ -184,6 +188,16 @@ int main(int argc, int **argv)
             printf("Unable to remove %s\n", bufferOutputDirs[i]);
         }
     }
+
+    /* STOP TIME MEASUREMENT */
+    clock_gettime(CLOCK_REALTIME, &end);
+    long seconds = end.tv_sec - begin.tv_sec;
+    long nanoseconds = end.tv_nsec - begin.tv_nsec;
+    double elapsed_time = seconds + nanoseconds *1e-9;
+
+    printf("Time Measured in seconds: %f\n", elapsed_time);
+    printf("Time Measured in nanoseconds: %ld\n", nanoseconds);
+
 
     return 0;
 }
