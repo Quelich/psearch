@@ -1,1 +1,0 @@
-input1.txt, 11: The time is coming up, the time is getting closer
