@@ -38,14 +38,15 @@ This program uses the same concept with `psearch3` with some modifications.`psea
 ## Learning Outcomes 
 - create child processes and concurrently solve problems with `fork()`.
 - Interprocess communication on Linux with POSIX API: 
-  - parent-child
+  - parent-child, `fork()`
   - master-slave
   - pipelines
-  - semaphores.
+  - semaphores
 - use shared memory to provide communication between processes:
   - shared anonymous mapping
   - shared file mapping
   - named and unnamed semaphores
+  - POSIX shared memory, `shm_open()`
 - File management (e.g., CRUD operations)
 - measure execution times of concurrent processes.
 - memory management (still needs review :D)
