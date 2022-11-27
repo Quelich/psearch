@@ -1,5 +1,5 @@
 # PSEARCH
-Psearch is a command line tool for searching a keyword in multiple files and find the matched lines.
+Psearch is a command line tool for searching a keyword in multiple text files and find the matched lines.
 - Psearch uses different Interprocess Communication (IPC) methods to optimize the search time:
   - fork (parent-child processes)
   - anonymous pipelines
